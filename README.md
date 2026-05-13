@@ -2,12 +2,17 @@
 
 Tekniske og fundamentale aktieanalyser for den selvbestemmende investor.
 
-## Struktur
+## 📁 Struktur
 
 ```
 .
-├── index.html              → /
-├── analyser/index.html     → /analyser/
+├── index.html              → forsiden /
+├── analyser/
+│   ├── index.html          → analyseoversigt /analyser/
+│   ├── _skabelon/          → SKABELON til nye analyser (kopier denne!)
+│   ├── vestas-vinden-vender/
+│   ├── tesla-kanalbrudd-nedad/
+│   └── genmab-pipeline-undervurderes/
 ├── ai-assistent/index.html → /ai-assistent/
 ├── metode/index.html       → /metode/
 ├── om/index.html           → /om/
@@ -20,56 +25,89 @@ Tekniske og fundamentale aktieanalyser for den selvbestemmende investor.
     └── script.js           → delt JS (nav, FAQ, AI-chat)
 ```
 
-## Lokal udvikling
+## ✏️ Sådan laver du en ny analyse
 
-Du kan ikke bare dobbeltklikke `index.html` — de absolutte stier (`/analyser/`, `/assets/style.css`) virker kun fra en webserver-rod.
+### Trin 1: Kopier skabelonen
 
-**Den nemmeste måde at se siden lokalt:**
+Kopier hele mappen `analyser/_skabelon/` og giv den et nyt navn baseret på aktien og emnet.
 
-```bash
-# Python (forudinstalleret på Mac/Linux)
-cd aktiekompas-site
-python3 -m http.server 8000
+**Eksempler på gode mappenavne** (brug bindestreger, ikke mellemrum):
+- `novo-nordisk-wegovy-volumen`
+- `maersk-head-shoulders`
+- `rheinmetall-skalering-vinder`
 
-# Eller med Node
-npx serve
+URL'en bliver så `https://dit-domæne.dk/analyser/novo-nordisk-wegovy-volumen/`
+
+### Trin 2: Udfyld teksten
+
+Åbn `analyser/[din-mappe]/index.html` i en teksteditor. Find alle steder med `[SKRIV: ...]` og udskift dem med dit eget indhold.
+
+**Tip:** Brug **Ctrl+F** ("Find") i editoren til at finde alle `[SKRIV:`-steder.
+
+### Trin 3: Beslut om analysen skal være låst
+
+Hver analyse har en "paywall"-blok i koden. Find sektionen markeret med:
+
+```html
+<!-- ═══ PAYWALL — kun for Premium-analyser ═══ -->
 ```
 
-Åbn så `http://localhost:8000` i din browser.
+- **Gratis analyse:** Slet hele blokken `<div class="paywall">...</div>`
+- **Premium analyse:** Behold den. Skriv kun en kort gratis intro før, og resten kommer som "teaser"
 
-## Deploy til GitHub Pages
+### Trin 4: Tilføj analysen til oversigten
 
-1. **Opret nyt repository** på [github.com](https://github.com) — fx `aktiekompas`
-2. **Upload alle filer og mapper** i dette repo (drag &amp; drop på GitHub.com fungerer fint)
-3. **Aktiver Pages**: Settings → Pages → Source: `main` branch, folder: `/ (root)` → Save
-4. Vent 1-2 minutter. Din side er live på `https://<dit-brugernavn>.github.io/aktiekompas/`
+Åbn `analyser/index.html` og kopier et af de eksisterende `<article class="ana-card">`-kort. Skift:
 
-> **Note:** Hvis du deployer i en undermappe (fx `aktiekompas.github.io/aktiekompas/`), skal de absolutte stier i HTML-filerne ændres fra `/analyser/` til `/aktiekompas/analyser/` osv. Den nemmeste løsning er at bruge et brugerdefineret domæne — så virker `/`-stierne direkte.
+- `href="..."` til din nye URL
+- Tags, titel, og excerpt
+- `data-cat="..."` til den rigtige kategori (teknisk / fundamental / makro / dansk / internationalt)
 
-## Brugerdefineret domæne
+### Trin 5: Commit og push
 
-Når du har et domæne (fx `aktiekompas.dk`):
+I GitHub Desktop: skriv en commit-besked og klik "Commit to main" → "Push origin".
 
-1. Tilføj en fil ved navn `CNAME` (uden filendelse) til repo'et med kun indholdet:
-   ```
-   aktiekompas.dk
-   ```
-2. Hos din DNS-udbyder peg domænet mod GitHub Pages:
-   - A-records mod: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-   - Eller CNAME for `www` mod `<dit-brugernavn>.github.io`
+Vercel opdaterer automatisk inden for 1-2 minutter.
 
-## AI-assistent
+## 🎨 Tekst-formatering
 
-AI-chatten kører i **demo-tilstand** indtil du opretter en backend-endpoint. Du kan ikke kalde Anthropic's API direkte fra browseren — så ville din API-nøgle være offentligt eksponeret.
+Inde i analysens HTML kan du bruge:
 
-**Anbefalet:** Opret en serverless function på Vercel eller Cloudflare Workers.
+| Markering | Resultat |
+|---|---|
+| `<b>vigtig tekst</b>` | Guldfarvet fed tekst |
+| `<em>kursiv</em>` i overskrifter | Guldfarvet kursiv |
+| `<h2>Overskrift</h2>` | Stor overskrift |
+| `<h3>Underoverskrift</h3>` | Mindre overskrift |
+| `<ul><li>punkt</li></ul>` | Punktliste med pile |
+| `<ol><li>punkt</li></ol>` | Nummereret liste |
+| `<blockquote>citat</blockquote>` | Fremhævet citat |
 
-Når endpoint'en er klar, sæt den i `assets/script.js`:
+## 🚀 Deploy
+
+Siden hostes på Vercel. Når du pusher til main-branchen på GitHub, opdaterer Vercel automatisk.
+
+## 🤖 AI-assistent
+
+AI-chatten kører i demo-tilstand indtil du opretter en backend-endpoint på Vercel.
+Konfigurer den i `assets/script.js`:
+
 ```js
-window.AKTIEKOMPAS_CHAT_API = '/api/chat'; // eller fuld URL
+window.AKTIEKOMPAS_CHAT_API = '/api/chat';
 ```
 
-## Juridisk
+## ⚠️ Vigtigt om medlemskaber
+
+**OBS:** Den nuværende paywall-effekt er kun **visuel** — den blurrer indholdet men beskytter det ikke teknisk. En bruger kan se hele indholdet ved at åbne "View Source" i browseren.
+
+For ægte medlemskabs-beskyttelse skal du bruge en platform som:
+- **Memberstack** (kan integreres i HTML)
+- **Outseta** (komplet medlemskab + Stripe)
+- **Ghost** (skift hele platformen)
+
+Indtil da, hold reelt "premium-only" indhold ude af HTML-filerne.
+
+## 📜 Juridisk
 
 Aktiekompas er en uddannelses- og analyseplatform, **ikke** finansiel rådgivning. Se `/vigtigt/` for den fulde ansvarsfraskrivelse.
 
