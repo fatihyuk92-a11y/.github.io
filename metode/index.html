@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Metode — Aktiekompas</title>
+<meta name="description" content="Fire lag, én beslutning. Sådan strukturerer vi hver analyse på Aktiekompas." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+
+<div class="risk-banner">
+  <div class="container">
+    <span><b>⚠ RISIKOADVARSEL:</b> Indholdet på dette website udgør IKKE finansiel rådgivning. <a href="/vigtigt/">Læs den fulde ansvarsfraskrivelse →</a></span>
+  </div>
+</div>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="/" class="logo"><div class="logo-mark"></div><span>Aktie<b>KOMPAS</b></span></a>
+    <nav class="nav-links">
+      <a href="/analyser/">Analyser</a>
+      <a href="/ai-assistent/">AI-Assistent</a>
+      <a href="/metode/">Metode</a>
+      <a href="/om/">Om</a>
+      <a href="/medlemskab/">Medlemskab</a>
+      <a href="/vigtigt/">Vigtigt</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost">Log ind</a>
+      <a href="/medlemskab/" class="btn btn-gold">Bliv medlem</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="reveal">
+      <span class="eyebrow">Metoden</span>
+      <h1 class="display">Fire lag,<br><em>én beslutning.</em></h1>
+      <p class="lede">Vi mixer aldrig faktorer i én blød konklusion. Hvert lag har sin egen rubric, dokumenteres separat, og placeres sidestillet, så du som læser kan se præcis hvor styrken — eller svagheden — i hver case ligger.</p>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:40px">
+  <div class="container">
+    <div class="method-deep reveal">
+      <div class="num">01</div>
+      <div>
+        <h3>Makro — <em>regimet sætter rammen</em></h3>
+        <p>Vi starter top-down. En god aktie i et dårligt regime er stadig en svær case. Derfor er den makroøkonomiske kontekst første lag — ikke et bilag.</p>
+        <p>Vi vurderer fire ting: <b>renter</b> (retning og hastighed), <b>FX</b> (særligt USD/DKK og EUR/DKK), <b>sektor-rotation</b> (hvor flyder kapitalen hen) og <b>geopolitik</b> (de store linjer, ikke nyhedscyklussen).</p>
+        <ul>
+          <li>Renteforventninger og rentekurvens form</li>
+          <li>USD-styrke som global likviditetsindikator</li>
+          <li>Sektor-spreads og rotationsmønstre</li>
+          <li>Risk-on / risk-off signaler fra credit og volatilitet</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-deep reveal">
+      <div class="num">02</div>
+      <div>
+        <h3>Fundamental — <em>regnskabet, ikke forsiden</em></h3>
+        <p>Vi læser hele regnskabet. Noterne. Cashflow-opgørelsen. Segmentrapporteringen. Det er der historien sker — ikke i pressemeddelelsen.</p>
+        <p>Værdiansættelsen bygger på <b>DCF</b> hvor det er rimeligt (mature businesses), <b>peer-multiples</b> for sektor-relativ vurdering, og <b>kvalitative faktorer</b> (moat, kapitalallokering, ledelsens track record).</p>
+        <ul>
+          <li>DCF med eksplicitte antagelser om vækst, marginer og WACC</li>
+          <li>EV/EBITDA, P/E, P/B og PEG i historisk og peer-kontekst</li>
+          <li>Free cash flow vs. rapporteret indtjening</li>
+          <li>ROIC vs. WACC — skaber virksomheden reel værdi?</li>
+          <li>Kapitalallokering: udbytte, aktietilbagekøb, M&amp;A-disciplin</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-deep reveal">
+      <div class="num">03</div>
+      <div>
+        <h3>Teknisk — <em>timingen, ikke beslutningen</em></h3>
+        <p>Tekniske niveauer er gode til at time entry og stop. De skal aldrig være selve beslutningen. Hvis fundamental siger nej, betyder et pænt setup på chartet ingenting.</p>
+        <p>Vi bruger <b>multi-timeframe analyse</b> (uge → dag → 4-timer), <b>volumen-bekræftelse</b>, og en udvalgt sæt af indikatorer som vi tør stole på.</p>
+        <ul>
+          <li>Trendstruktur og struktursvigt</li>
+          <li>Support/resistance niveauer og deres historiske validitet</li>
+          <li>Volumen-profiler og volume-weighted average price (VWAP)</li>
+          <li>RSI, MACD og glidende gennemsnit som sekundære filtre</li>
+          <li>Candlestick-mønstre i vigtige zoner</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="method-deep reveal">
+      <div class="num">04</div>
+      <div>
+        <h3>Risiko — <em>uden ramme er det bare en mening</em></h3>
+        <p>En analyse uden risikoramme er bare en mening. Derfor er sidste lag altid eksplicit: hvor stor må positionen være, hvor er stoppet, og hvad er drawdown-toleransen.</p>
+        <p>Vi tænker i <b>scenarier</b> (bull/base/bear), ikke i punktforventninger. Det giver dig grundlag for at justere position-sizing efter <i>din egen</i> risikoprofil — ikke vores.</p>
+        <ul>
+          <li>Position-sizing relateret til konto-størrelse og risiko per trade</li>
+          <li>Definerede stop-niveauer baseret på teknisk struktur</li>
+          <li>Bull/base/bear scenarier med sandsynlighedsvurdering</li>
+          <li>Korrelations-tjek mod eksisterende portefølje</li>
+          <li>Worst-case: hvad sker der hvis hele casen falder fra hinanden?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:linear-gradient(180deg,var(--bg) 0%, #0a0a09 100%)">
+  <div class="container">
+    <div class="sec-head reveal center" style="justify-content:center;flex-direction:column;align-items:center;text-align:center">
+      <span class="eyebrow">Hvad du altid får</span>
+      <h2 class="display" style="margin-top:18px;text-align:center;font-size:42px">Konsistent <em>struktur</em>, hver gang.</h2>
+    </div>
+    <div class="values">
+      <div class="value-card reveal">
+        <div class="ic">📊</div>
+        <h4>Tydelige niveauer</h4>
+        <p>Hver analyse har eksplicitte tal: entry-zoner, stop, scenarie-mål. Du skal aldrig gætte hvad jeg "egentlig mener".</p>
+      </div>
+      <div class="value-card reveal" style="transition-delay:.1s">
+        <div class="ic">🧭</div>
+        <h4>Egne positioner oplyst</h4>
+        <p>Har jeg selv aktien? Står der i analysen. Transparens om interessekonflikter er et grundprincip.</p>
+      </div>
+      <div class="value-card reveal" style="transition-delay:.2s">
+        <div class="ic">📝</div>
+        <h4>Opfølgning</h4>
+        <p>Når en analyse rammer sit mål eller stop, dokumenteres det. Track record bygges åbent — også når det går galt.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="logo"><div class="logo-mark"></div><span>Aktie<b>KOMPAS</b></span></div>
+        <p>Tekniske og fundamentale aktieanalyser for den selvbestemmende investor.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Produkt</h5>
+        <a href="/analyser/">Analyser</a>
+        <a href="/ai-assistent/">AI-Assistent</a>
+        <a href="/medlemskab/">Medlemskab</a>
+        <a href="/metode/">Metode</a>
+      </div>
+      <div class="foot-col">
+        <h5>Selskab</h5>
+        <a href="/om/">Om</a>
+        <a href="/faq/">FAQ</a>
+        <a href="mailto:hej@aktiekompas.dk">Kontakt</a>
+      </div>
+      <div class="foot-col">
+        <h5>Juridisk</h5>
+        <a href="/vigtigt/">Ansvarsfraskrivelse</a>
+        <a href="#">Vilkår</a>
+        <a href="#">Persondata</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-disclaimer">
+    <div class="container">
+      <b>⚠ ANSVARSFRASKRIVELSE</b><br><br>
+      Alle analyser og oplysninger på Aktiekompas er baseret på den viden, jeg har opnået på aktiemarkedet igennem de sidste mange år. <b>Aktiekompas udbyder ikke rådgivning eller anbefalinger</b>, og alle analyser er udelukkende til undervisning. Der er altid en risiko forbundet med investering, derfor bør du <b>ikke handle med penge, som du ikke har råd til at tabe</b>. Brug analyserne og oplysningerne som en slags undervisningsmateriale, men foretag altid dine egne beslutninger og analyser, inden du handler. Historiske afkast er ikke en garanti for fremtidige afkast. <b>Aktiekompas fratager sig alt ansvar for analyserne</b>.
+    </div>
+  </div>
+  <div class="container">
+    <div class="foot-legal"><span>© 2026 AKTIEKOMPAS APS · CVR 00000000</span><span>BYGGET I KØBENHAVN</span></div>
+  </div>
+</footer>
+
+<script src="/assets/script.js"></script>
+</body>
+</html>
