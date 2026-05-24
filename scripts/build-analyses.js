@@ -69,7 +69,115 @@ function main() {
   rebuildListingPage(analyses);
   console.log('✓ Updated /analyser/ listing page');
 
+  // Re-generate the home page's "Latest analyses" section
+  rebuildHomePage(analyses);
+  console.log('✓ Updated home page');
+
   console.log(`\nDone! ${analyses.length} analyses built.`);
+}
+
+function rebuildHomePage(analyses) {
+  const homePath = path.join(ROOT, 'index.html');
+  if (!fs.existsSync(homePath)) {
+    console.log('  ⚠ index.html not found — skipping home page rebuild');
+    return;
+  }
+
+  // Sort newest first
+  const toISO = (d) => {
+    if (!d) return '';
+    if (d instanceof Date) return d.toISOString();
+    if (typeof d === 'string') return d;
+    try { return new Date(d).toISOString(); } catch { return ''; }
+  };
+  const sorted = [...analyses].sort((a, b) => toISO(b.dato).localeCompare(toISO(a.dato)));
+
+  // Take only the 5 most recent
+  const featured = sorted.slice(0, 5);
+  if (featured.length === 0) {
+    console.log('  ⚠ No analyses to show on home page');
+    return;
+  }
+
+  // Build cards — first one is "featured" (large), rest are normal
+  const cards = featured.map((a, idx) => buildHomeCard(a, idx === 0));
+
+  let html = fs.readFileSync(homePath, 'utf-8');
+  const startMarker = '<!-- HOME_ANALYSES_START -->';
+  const endMarker = '<!-- HOME_ANALYSES_END -->';
+  const startIdx = html.indexOf(startMarker);
+  const endIdx = html.indexOf(endMarker);
+
+  if (startIdx === -1 || endIdx === -1) {
+    console.log('  ⚠ Could not find HOME_ANALYSES markers — skipping home page rebuild');
+    return;
+  }
+
+  const newContent = startMarker + '\n' + cards.join('\n\n') + '\n      ' + endMarker;
+  html = html.slice(0, startIdx) + newContent + html.slice(endIdx + endMarker.length);
+  fs.writeFileSync(homePath, html);
+}
+
+function buildHomeCard(a, isFeatured) {
+  const setupClass = a.setup_type === 'Bearish' ? 'pill-bear' : (a.setup_type === 'Bullish' ? 'pill-bull' : 'pill');
+  const typeLabel = Array.isArray(a.analyse_type) ? a.analyse_type[0] : (a.analyse_type || '');
+  const dateShort = a.dato ? formatDanishDateShort(a.dato) : '';
+  const targetText = a.niveauer && a.niveauer.maal ? a.niveauer.maal : '';
+  const targetColor = a.setup_type === 'Bearish' ? 'style="color:var(--bear)"' : '';
+  const isPremium = a.tier === 'premium';
+  const isLocked = isPremium;
+  const lockClass = isLocked ? 'locked' : '';
+  const lockAttr = isLocked ? '' : `<a href="/analyser/${a.slug}/" class="card-link" aria-label="Læs analyse: ${escapeHtml(a.titel || '')}"></a>`;
+  const chartPath = a.setup_type === 'Bearish'
+    ? 'M10,20 L50,30 L90,25 L130,40 L170,45 L210,55 L250,70'
+    : 'M10,60 L50,55 L90,50 L130,40 L170,35 L210,25 L250,15';
+  const chartColor = a.setup_type === 'Bearish' ? '#f87171' : '#4ade80';
+  const excerpt = (a.lede || '').slice(0, isFeatured ? 240 : 140);
+  const excerptEllipsis = (a.lede || '').length > (isFeatured ? 240 : 140) ? '...' : '';
+
+  // Featured card uses a larger chart
+  if (isFeatured) {
+    return `      <article class="ana-card featured ${lockClass} reveal">
+        ${lockAttr}
+        <div>
+          <div class="ana-tags">
+            <span class="pill ${setupClass}">${escapeHtml(a.setup_type || '')} setup</span>
+            <span class="pill">${escapeHtml(typeLabel)}</span>
+            ${isPremium ? '<span class="pill pill-gold">Premium</span>' : ''}
+          </div>
+          <h3 class="ana-title">${escapeHtml(a.aktie_navn || '')}: ${escapeHtml(a.titel || '')}</h3>
+          <p class="ana-excerpt">${escapeHtml(excerpt)}${excerptEllipsis}</p>
+          <div class="ana-chart-mini">
+            <svg viewBox="0 0 600 220" preserveAspectRatio="none" width="100%" height="100%">
+              <path d="${chartPath.replace(/L\d+,(\d+)/g, (m, y) => m.replace(y, Math.round(y*2.7))).replace(/M10,(\d+)/, (m, y) => 'M20,' + Math.round(y*2.7))}" fill="none" stroke="${chartColor}" stroke-width="2" transform="scale(2.4,1) translate(-10,0)"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ana-foot">
+          <span>${dateShort} · ${escapeHtml(a.laesetid || '')}</span>
+          <span class="price-target" ${targetColor}>${targetText ? 'Mål: ' + escapeHtml(targetText) : ''}</span>
+        </div>
+      </article>`;
+  }
+
+  return `      <article class="ana-card ${lockClass} reveal">
+        ${lockAttr}
+        <div>
+          <div class="ana-tags">
+            <span class="pill ${setupClass}">${escapeHtml(a.setup_type || '')}</span>
+            <span class="pill">${escapeHtml(typeLabel)}</span>
+            ${isPremium ? '<span class="pill pill-gold">Premium</span>' : ''}
+          </div>
+          <h3 class="ana-title">${escapeHtml(a.aktie_navn || '')}: ${escapeHtml(a.titel || '')}</h3>
+          <p class="ana-excerpt">${escapeHtml(excerpt)}${excerptEllipsis}</p>
+          <div class="ana-chart-mini">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none" width="100%" height="100%">
+              <path d="${chartPath}" fill="none" stroke="${chartColor}" stroke-width="1.8"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ana-foot"><span>${dateShort} · ${escapeHtml(typeLabel)}</span><span class="price-target" ${targetColor}>${escapeHtml(targetText)}</span></div>
+      </article>`;
 }
 
 function renderTemplate(template, data, bodyHtml, slug) {
