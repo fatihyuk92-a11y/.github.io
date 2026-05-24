@@ -119,8 +119,15 @@ function renderTemplate(template, data, bodyHtml, slug) {
 }
 
 function rebuildListingPage(analyses) {
-  // Sort newest first
-  analyses.sort((a, b) => (b.dato || '').localeCompare(a.dato || ''));
+  // Sort newest first — coerce dates to ISO strings for comparison
+  // (YAML may parse them as Date objects, strings, or undefined)
+  const toISO = (d) => {
+    if (!d) return '';
+    if (d instanceof Date) return d.toISOString();
+    if (typeof d === 'string') return d;
+    try { return new Date(d).toISOString(); } catch { return ''; }
+  };
+  analyses.sort((a, b) => toISO(b.dato).localeCompare(toISO(a.dato)));
 
   const listingPath = path.join(OUT_DIR, 'index.html');
   if (!fs.existsSync(listingPath)) {
@@ -194,15 +201,15 @@ function escapeHtml(str) {
 
 function formatDanishDate(dateStr) {
   const months = ['januar','februar','marts','april','maj','juni','juli','august','september','oktober','november','december'];
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
+  const d = dateStr instanceof Date ? dateStr : new Date(dateStr);
+  if (isNaN(d)) return String(dateStr || '');
   return `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function formatDanishDateShort(dateStr) {
   const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
+  const d = dateStr instanceof Date ? dateStr : new Date(dateStr);
+  if (isNaN(d)) return String(dateStr || '');
   return `${d.getDate()}. ${months[d.getMonth()]}`;
 }
 
