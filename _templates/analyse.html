@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{{aktie_navn}}: {{titel}} — Aktiekompas</title>
+<meta name="description" content="{{lede}}" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+
+<div class="risk-banner">
+  <div class="container">
+    <span><b>⚠ RISIKOADVARSEL:</b> Indholdet på dette website udgør IKKE finansiel rådgivning. <a href="/vigtigt/">Læs den fulde ansvarsfraskrivelse →</a></span>
+  </div>
+</div>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="/" class="logo"><div class="logo-mark"></div><span>Aktie<b>KOMPAS</b></span></a>
+    <nav class="nav-links">
+      <a href="/analyser/">Analyser</a>
+      <a href="/ai-assistent/">AI-Assistent</a>
+      <a href="/metode/">Metode</a>
+      <a href="/om/">Om</a>
+      <a href="/medlemskab/">Medlemskab</a>
+      <a href="/vigtigt/">Vigtigt</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost">Log ind</a>
+      <a href="/medlemskab/" class="btn btn-gold">Bliv medlem</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="ana-detail-head">
+  <div class="container">
+    <div class="reveal">
+      <div class="ana-breadcrumb">
+        <a href="/">Aktiekompas</a><span class="sep">/</span><a href="/analyser/">Analyser</a><span class="sep">/</span><span>{{aktie_navn}}</span>
+      </div>
+      <div class="ana-head-tags">
+        <span class="pill {{setup_class}}">● {{setup_type}} setup</span>
+        <span class="pill">{{type_label}}</span>
+        <span class="pill">Sektor: {{sektor}}</span>
+        {{tier_badge}}
+      </div>
+      <h1 class="display">{{aktie_navn}}: <em>{{titel}}</em></h1>
+      <p class="lede">{{lede}}</p>
+      <div class="ana-byline">
+        <div class="author">
+          <div class="avatar">AK</div>
+          <div class="meta">Aktiekompas<small>{{dato}} · {{laesetid}}</small></div>
+        </div>
+        <div class="ana-share">
+          <button aria-label="Del på email"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>
+          <button aria-label="Kopier link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="container">
+    <div class="ana-body-grid">
+      <article class="ana-body reveal">
+
+        <div class="key-levels">
+          <h4>Nøgleniveauer</h4>
+          <div class="grid">
+            <div class="lvl"><span class="k">Aktuel kurs</span><span class="v">{{kurs}}</span></div>
+            <div class="lvl up"><span class="k">Kursmål</span><span class="v">{{maal}}</span></div>
+            <div class="lvl down"><span class="k">Stop-loss</span><span class="v">{{stop}}</span></div>
+            <div class="lvl gold"><span class="k">Risk/Reward</span><span class="v">{{rr}}</span></div>
+          </div>
+        </div>
+
+        {{body}}
+
+        <div class="disclosure">
+          <div class="ic">i</div>
+          <div class="text">
+            <b>Position-oplysning:</b> {{position_tekst}}
+          </div>
+        </div>
+
+        <p style="color:var(--ink-mute);font-size:14px;margin-top:30px;padding-top:24px;border-top:1px solid var(--line);font-style:italic">
+          <b style="color:var(--gold);font-style:normal">Husk:</b> Denne analyse er udelukkende til undervisning. Aktiekompas udbyder ikke rådgivning eller anbefalinger. Foretag altid dine egne beslutninger inden du handler. Historiske afkast er ingen garanti for fremtidige afkast.
+        </p>
+
+      </article>
+
+      <aside class="ana-sidebar reveal" style="transition-delay:.15s">
+        <div class="ana-sidebar-card">
+          <h5>Hurtige fakta</h5>
+          {{fakta_rows}}
+        </div>
+      </aside>
+    </div>
+
+    <div class="ana-cta reveal">
+      <h3>Vil du have <em style="color:var(--gold);font-style:italic">alle</em> analyserne?</h3>
+      <p>Få adgang til hele arkivet, ugentlige opdateringer, og AI-assistenten der hjælper dig forstå metoden bag hver analyse.</p>
+      <a href="/medlemskab/" class="btn btn-gold">Se medlemskab →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand"><div class="logo"><div class="logo-mark"></div><span>Aktie<b>KOMPAS</b></span></div><p>Tekniske og fundamentale aktieanalyser for den selvbestemmende investor.</p></div>
+      <div class="foot-col"><h5>Produkt</h5><a href="/analyser/">Analyser</a><a href="/ai-assistent/">AI-Assistent</a><a href="/medlemskab/">Medlemskab</a><a href="/metode/">Metode</a></div>
+      <div class="foot-col"><h5>Selskab</h5><a href="/om/">Om</a><a href="/faq/">FAQ</a><a href="mailto:hej@aktiekompas.dk">Kontakt</a></div>
+      <div class="foot-col"><h5>Juridisk</h5><a href="/vigtigt/">Ansvarsfraskrivelse</a><a href="#">Vilkår</a><a href="#">Persondata</a></div>
+    </div>
+  </div>
+  <div class="foot-disclaimer"><div class="container"><b>⚠ ANSVARSFRASKRIVELSE</b><br><br>Alle analyser og oplysninger på Aktiekompas er baseret på den viden, jeg har opnået på aktiemarkedet igennem de sidste mange år. <b>Aktiekompas udbyder ikke rådgivning eller anbefalinger</b>, og alle analyser er udelukkende til undervisning. Der er altid en risiko forbundet med investering, derfor bør du <b>ikke handle med penge, som du ikke har råd til at tabe</b>. Brug analyserne og oplysningerne som en slags undervisningsmateriale, men foretag altid dine egne beslutninger og analyser, inden du handler. Historiske afkast er ikke en garanti for fremtidige afkast. <b>Aktiekompas fratager sig alt ansvar for analyserne</b>.</div></div>
+  <div class="container"><div class="foot-legal"><span>© 2026 AKTIEKOMPAS APS · CVR 00000000</span><span>BYGGET I KØBENHAVN</span></div></div>
+</footer>
+
+<script src="/assets/script.js"></script>
+</body>
+</html>

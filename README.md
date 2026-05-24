@@ -1,116 +1,159 @@
 # Aktiekompas
 
-Tekniske og fundamentale aktieanalyser for den selvbestemmende investor.
+Tekniske og fundamentale aktieanalyser med integreret admin-dashboard (Decap CMS).
+
+---
+
+## 🚀 Sådan kommer du i gang med admin-dashboardet
+
+For at få `/admin/`-dashboardet til at virke skal du sætte tre ting op (engangs-arbejde, ca. 20 minutter):
+
+### Trin 1 — Opret en GitHub OAuth-app
+
+1. Gå til [github.com/settings/developers](https://github.com/settings/developers)
+2. Klik **"OAuth Apps" → "New OAuth App"**
+3. Udfyld:
+   - **Application name:** `Aktiekompas CMS`
+   - **Homepage URL:** `https://github-io-lemon.vercel.app` (eller dit Vercel-domæne)
+   - **Authorization callback URL:** `https://github-io-lemon.vercel.app/api/callback`
+4. Klik **"Register application"**
+5. Notér **Client ID** ned
+6. Klik **"Generate a new client secret"** → notér også den ned
+
+### Trin 2 — Tilføj OAuth-credentials til Vercel
+
+1. Gå til [vercel.com](https://vercel.com) og åbn dit projekt
+2. **Settings → Environment Variables**
+3. Tilføj to nye:
+   - `OAUTH_GITHUB_CLIENT_ID` = (Client ID fra Trin 1)
+   - `OAUTH_GITHUB_CLIENT_SECRET` = (Client secret fra Trin 1)
+4. Vælg "Production" som scope
+5. Klik **Save**
+
+### Trin 3 — Opdater `admin/config.yml` med dit repo-navn
+
+Åbn `admin/config.yml` i en editor. Find linjen:
+
+```yaml
+repo: fatihyuk92-a11y/fatihyuk92-a11y.github.io
+base_url: https://github-io-lemon.vercel.app
+```
+
+Ret begge til at matche dit faktiske GitHub-repo og Vercel-domæne (de er allerede sat for dig).
+
+### Trin 4 — Push til GitHub og vent på Vercel-deploy
+
+Vercel deployer automatisk. Når det er færdigt:
+
+1. Gå til `https://github-io-lemon.vercel.app/admin/`
+2. Klik **"Login with GitHub"**
+3. Godkend appen
+4. Du er inde i CMS'et! 🎉
+
+---
+
+## ✍️ Sådan opretter du en ny analyse
+
+1. Gå til `/admin/`
+2. Klik **"📊 Analyser" → "New Analyser"**
+3. Udfyld felterne:
+   - **Titel** — kort beskrivende titel (uden aktiens navn)
+   - **Slug** — URL-stien (auto-genereres, fx `novo-wegovy-volumen`)
+   - **Aktie/Selskab** — fx "Novo Nordisk"
+   - **Dato** — analysens publikationsdato
+   - **Setup-type** — Bullish/Bearish/Neutral
+   - **Analyse-type** — Teknisk og/eller Fundamental og/eller Makro
+   - **Tier** — Gratis eller Premium (Premium vises som låst)
+   - **Ledetekst** — 60-100 ord intro
+   - **Nøgleniveauer** — kurs, mål, stop, R/R
+   - **Sidebar-fakta** — ticker, market cap, P/E osv.
+   - **Selve analysen** — skriv i editor'en (samme som Word)
+   - **Position-oplysning** — angiv om du ejer aktien
+4. Klik **"Save"** for kladde, eller **"Publish"** for at gå live
+
+Når du klikker Publish:
+- Decap CMS committer en ny `.md`-fil til GitHub
+- Vercel detekterer ændringen og rebuilder siden
+- Build-scriptet konverterer markdown → HTML med dit design
+- Analysen er live på `/analyser/<slug>/` indenfor ~60 sekunder
+
+---
 
 ## 📁 Struktur
 
 ```
 .
-├── index.html              → forsiden /
-├── analyser/
-│   ├── index.html          → analyseoversigt /analyser/
-│   ├── _skabelon/          → SKABELON til nye analyser (kopier denne!)
+├── admin/                   → CMS dashboard (Decap)
+│   ├── index.html
+│   └── config.yml          → CMS-felter defineres her
+├── api/                     → Vercel serverless functions
+│   ├── auth.js              → GitHub OAuth start
+│   └── callback.js          → GitHub OAuth callback
+├── _data/
+│   └── analyser/            → Markdown-filer (én pr. analyse)
+│       ├── vestas-vinden-vender.md
+│       ├── tesla-kanalbrudd-nedad.md
+│       └── genmab-pipeline-undervurderes.md
+├── _templates/
+│   └── analyse.html         → HTML-skabelon med placeholders
+├── scripts/
+│   └── build-analyses.js    → Konverterer markdown → HTML
+├── analyser/                → AUTO-GENERERET — rør ikke!
+│   ├── index.html           → Listing page
 │   ├── vestas-vinden-vender/
 │   ├── tesla-kanalbrudd-nedad/
 │   └── genmab-pipeline-undervurderes/
-├── ai-assistent/index.html → /ai-assistent/
-├── metode/index.html       → /metode/
-├── om/index.html           → /om/
-├── medlemskab/index.html   → /medlemskab/
-├── vigtigt/index.html      → /vigtigt/
-├── faq/index.html          → /faq/
-├── 404.html                → fallback for ukendte URLs
-└── assets/
-    ├── style.css           → delt CSS
-    └── script.js           → delt JS (nav, FAQ, AI-chat)
+├── assets/
+│   ├── style.css
+│   ├── script.js
+│   └── uploads/             → Decap gemmer billeder her
+├── (alle andre sider: index, om, faq, osv.)
+├── package.json
+└── vercel.json              → Fortæller Vercel hvordan den bygger
 ```
-
-## ✏️ Sådan laver du en ny analyse
-
-### Trin 1: Kopier skabelonen
-
-Kopier hele mappen `analyser/_skabelon/` og giv den et nyt navn baseret på aktien og emnet.
-
-**Eksempler på gode mappenavne** (brug bindestreger, ikke mellemrum):
-- `novo-nordisk-wegovy-volumen`
-- `maersk-head-shoulders`
-- `rheinmetall-skalering-vinder`
-
-URL'en bliver så `https://dit-domæne.dk/analyser/novo-nordisk-wegovy-volumen/`
-
-### Trin 2: Udfyld teksten
-
-Åbn `analyser/[din-mappe]/index.html` i en teksteditor. Find alle steder med `[SKRIV: ...]` og udskift dem med dit eget indhold.
-
-**Tip:** Brug **Ctrl+F** ("Find") i editoren til at finde alle `[SKRIV:`-steder.
-
-### Trin 3: Beslut om analysen skal være låst
-
-Hver analyse har en "paywall"-blok i koden. Find sektionen markeret med:
-
-```html
-<!-- ═══ PAYWALL — kun for Premium-analyser ═══ -->
-```
-
-- **Gratis analyse:** Slet hele blokken `<div class="paywall">...</div>`
-- **Premium analyse:** Behold den. Skriv kun en kort gratis intro før, og resten kommer som "teaser"
-
-### Trin 4: Tilføj analysen til oversigten
-
-Åbn `analyser/index.html` og kopier et af de eksisterende `<article class="ana-card">`-kort. Skift:
-
-- `href="..."` til din nye URL
-- Tags, titel, og excerpt
-- `data-cat="..."` til den rigtige kategori (teknisk / fundamental / makro / dansk / internationalt)
-
-### Trin 5: Commit og push
-
-I GitHub Desktop: skriv en commit-besked og klik "Commit to main" → "Push origin".
-
-Vercel opdaterer automatisk inden for 1-2 minutter.
-
-## 🎨 Tekst-formatering
-
-Inde i analysens HTML kan du bruge:
-
-| Markering | Resultat |
-|---|---|
-| `<b>vigtig tekst</b>` | Guldfarvet fed tekst |
-| `<em>kursiv</em>` i overskrifter | Guldfarvet kursiv |
-| `<h2>Overskrift</h2>` | Stor overskrift |
-| `<h3>Underoverskrift</h3>` | Mindre overskrift |
-| `<ul><li>punkt</li></ul>` | Punktliste med pile |
-| `<ol><li>punkt</li></ol>` | Nummereret liste |
-| `<blockquote>citat</blockquote>` | Fremhævet citat |
-
-## 🚀 Deploy
-
-Siden hostes på Vercel. Når du pusher til main-branchen på GitHub, opdaterer Vercel automatisk.
-
-## 🤖 AI-assistent
-
-AI-chatten kører i demo-tilstand indtil du opretter en backend-endpoint på Vercel.
-Konfigurer den i `assets/script.js`:
-
-```js
-window.AKTIEKOMPAS_CHAT_API = '/api/chat';
-```
-
-## ⚠️ Vigtigt om medlemskaber
-
-**OBS:** Den nuværende paywall-effekt er kun **visuel** — den blurrer indholdet men beskytter det ikke teknisk. En bruger kan se hele indholdet ved at åbne "View Source" i browseren.
-
-For ægte medlemskabs-beskyttelse skal du bruge en platform som:
-- **Memberstack** (kan integreres i HTML)
-- **Outseta** (komplet medlemskab + Stripe)
-- **Ghost** (skift hele platformen)
-
-Indtil da, hold reelt "premium-only" indhold ude af HTML-filerne.
-
-## 📜 Juridisk
-
-Aktiekompas er en uddannelses- og analyseplatform, **ikke** finansiel rådgivning. Se `/vigtigt/` for den fulde ansvarsfraskrivelse.
 
 ---
 
-© 2026 Aktiekompas
+## 🛠️ Lokal udvikling
+
+```bash
+# Installer dependencies
+npm install
+
+# Byg analyserne lokalt
+npm run build
+
+# Start en lokal server
+python3 -m http.server 8000
+# eller
+npx serve
+```
+
+Åbn `http://localhost:8000` i din browser.
+
+---
+
+## ⚠️ Vigtigt om filerne i `analyser/`
+
+Mapperne under `analyser/` er **auto-genererede** af build-scriptet. Hvis du redigerer dem manuelt, bliver dine ændringer overskrevet næste gang Vercel deployer.
+
+Den eneste fil i `analyser/` du selv kan redigere er listing-siden (`analyser/index.html`) — men kun delene **uden for** `<div class="analyses-flat">`. Selve kortene genereres automatisk.
+
+**Alle analyser redigeres via /admin/ eller direkte i `_data/analyser/*.md`.**
+
+---
+
+## 💰 Vil du tilføje medlemskab/betaling?
+
+Næste skridt (ikke inkluderet):
+- Stripe-integration for abonnement
+- Login-system så Premium-analyser kun er tilgængelige for medlemmer
+- Email-newsletter til medlemmer
+
+Sig til hvis du vil have hjælp til disse.
+
+---
+
+## 📧 Spørgsmål
+
+Skriv til hej@aktiekompas.dk (sæt en ægte email op via fx Google Workspace eller ProtonMail).

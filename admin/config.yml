@@ -1,0 +1,225 @@
+# ════════════════════════════════════════════════════════════════
+# AKTIEKOMPAS CMS — KONFIGURATION
+# ════════════════════════════════════════════════════════════════
+# Denne fil definerer alle felter du kan udfylde når du opretter
+# en ny analyse i admin-dashboardet.
+# ════════════════════════════════════════════════════════════════
+
+# Authentication backend — bruger GitHub OAuth via vores egen proxy
+backend:
+  name: github
+  repo: fatihyuk92-a11y/fatihyuk92-a11y.github.io
+  branch: main
+  base_url: https://github-io-lemon.vercel.app
+  auth_endpoint: api/auth
+  commit_messages:
+    create: "Ny analyse: {{slug}}"
+    update: "Opdateret analyse: {{slug}}"
+    delete: "Slettet analyse: {{slug}}"
+
+# Where uploaded images go
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+# Editorial workflow gives you draft → review → publish stages
+publish_mode: editorial_workflow
+
+# Site URL for preview links
+site_url: https://github-io-lemon.vercel.app
+display_url: https://github-io-lemon.vercel.app
+logo_url: /assets/logo-mark.svg
+
+# Locale (Danish)
+locale: 'en'  # Decap only supports specific locales — UI labels stay English but content is Danish
+
+collections:
+  # ═════════════════════════════════════════════════════════════
+  # ANALYSER COLLECTION
+  # ═════════════════════════════════════════════════════════════
+  - name: "analyser"
+    label: "📊 Analyser"
+    label_singular: "Analyse"
+    folder: "_data/analyser"
+    create: true
+    slug: "{{slug}}"
+    preview_path: "analyser/{{slug}}"
+    editor:
+      preview: true
+    summary: "{{titel}} — {{dato}}"
+    sortable_fields: ['dato', 'titel']
+    view_filters:
+      - label: "Bullish"
+        field: setup_type
+        pattern: 'Bullish'
+      - label: "Bearish"
+        field: setup_type
+        pattern: 'Bearish'
+      - label: "Premium"
+        field: tier
+        pattern: 'premium'
+
+    fields:
+      # ─── GRUNDLÆGGENDE ─────────────────────────────────
+      - label: "Titel"
+        name: "titel"
+        widget: "string"
+        hint: "Aktiens navn + kort titel. Fx: Novo Nordisk: Wegovy-volumen accelererer"
+        required: true
+
+      - label: "Slug (URL)"
+        name: "slug"
+        widget: "string"
+        hint: "Auto-genereres fra titel. Kun små bogstaver og bindestreger. Fx: novo-nordisk-wegovy"
+        pattern: ['^[a-z0-9\-]+$', "Kun små bogstaver, tal og bindestreger"]
+        required: true
+
+      - label: "Aktie/Selskab"
+        name: "aktie_navn"
+        widget: "string"
+        hint: "Vises i breadcrumb. Fx: Novo Nordisk"
+        required: true
+
+      - label: "Dato"
+        name: "dato"
+        widget: "datetime"
+        default: ""
+        date_format: "DD. MMMM YYYY"
+        time_format: false
+        format: "YYYY-MM-DD"
+        required: true
+
+      - label: "Læsetid"
+        name: "laesetid"
+        widget: "string"
+        hint: "Fx: 8 min læsning"
+        default: "6 min læsning"
+
+      # ─── KATEGORISERING ────────────────────────────────
+      - label: "Setup-type"
+        name: "setup_type"
+        widget: "select"
+        options:
+          - { label: "Bullish setup", value: "Bullish" }
+          - { label: "Bearish setup", value: "Bearish" }
+          - { label: "Neutral", value: "Neutral" }
+        default: "Bullish"
+        required: true
+
+      - label: "Analyse-type"
+        name: "analyse_type"
+        widget: "select"
+        multiple: true
+        options:
+          - "Teknisk"
+          - "Fundamental"
+          - "Makro"
+        default: ["Teknisk"]
+        required: true
+
+      - label: "Sektor"
+        name: "sektor"
+        widget: "string"
+        hint: "Fx: Pharma, Tech, Industri"
+
+      - label: "Marked"
+        name: "marked"
+        widget: "select"
+        options:
+          - { label: "Dansk C25", value: "dansk" }
+          - { label: "Internationalt", value: "internationalt" }
+          - { label: "Makro/Sektor", value: "makro" }
+        default: "dansk"
+
+      - label: "Tier"
+        name: "tier"
+        widget: "select"
+        options:
+          - { label: "Gratis (alle kan læse)", value: "free" }
+          - { label: "Premium (kun medlemmer)", value: "premium" }
+        default: "free"
+        hint: "Premium-analyser vises som låste på listen for ikke-medlemmer"
+
+      # ─── LEDETEKST ─────────────────────────────────────
+      - label: "Ledetekst (intro)"
+        name: "lede"
+        widget: "text"
+        hint: "60-100 ord. Vises både på listen og som intro på selve siden."
+        required: true
+
+      # ─── NØGLENIVEAUER ─────────────────────────────────
+      - label: "Nøgleniveauer"
+        name: "niveauer"
+        widget: "object"
+        hint: "Vises i den fremhævede boks øverst i analysen"
+        fields:
+          - { label: "Aktuel kurs", name: "kurs", widget: "string", default: "DKK ", required: false }
+          - { label: "Kursmål", name: "maal", widget: "string", required: false }
+          - { label: "Stop-loss", name: "stop", widget: "string", required: false }
+          - { label: "Risk/Reward", name: "rr", widget: "string", hint: "Fx: 2,5 : 1", required: false }
+
+      # ─── SIDEBAR-FAKTA ─────────────────────────────────
+      - label: "Sidebar-fakta"
+        name: "fakta"
+        widget: "object"
+        collapsed: true
+        hint: "Vises i højre sidebar — alle felter er valgfrie"
+        fields:
+          - { label: "Ticker", name: "ticker", widget: "string", required: false }
+          - { label: "Sektor", name: "sektor", widget: "string", required: false }
+          - { label: "Market Cap", name: "market_cap", widget: "string", required: false }
+          - { label: "P/E (fwd)", name: "pe", widget: "string", required: false }
+          - { label: "EV/EBITDA", name: "ev_ebitda", widget: "string", required: false }
+          - { label: "Udbytte", name: "udbytte", widget: "string", required: false }
+          - { label: "52-uge høj", name: "h52", widget: "string", required: false }
+          - { label: "52-uge lav", name: "l52", widget: "string", required: false }
+
+      # ─── HOVEDINDHOLD ──────────────────────────────────
+      - label: "Selve analysen"
+        name: "body"
+        widget: "markdown"
+        hint: "Brug ## for overskrifter, **text** for fed. Du kan også indsætte billeder af charts (fx fra TradingView)."
+        required: true
+        buttons:
+          - bold
+          - italic
+          - heading-two
+          - heading-three
+          - quote
+          - bulleted-list
+          - numbered-list
+          - link
+          - image
+
+      # ─── POSITION-OPLYSNING ────────────────────────────
+      - label: "Position-oplysning"
+        name: "position"
+        widget: "object"
+        hint: "Vises som disclosure-boks nederst — vigtig for transparens"
+        fields:
+          - label: "Ejer du aktien?"
+            name: "ejer"
+            widget: "boolean"
+            default: false
+          - label: "Position-tekst"
+            name: "tekst"
+            widget: "text"
+            required: false
+            hint: "Hvis du ejer: skriv detaljer. Hvis ikke: skriv 'Udgiveren har ingen position'."
+            default: "Udgiveren har ingen position på publikationstidspunktet."
+
+  # ═════════════════════════════════════════════════════════════
+  # INDSTILLINGER (singleton)
+  # ═════════════════════════════════════════════════════════════
+  - name: "settings"
+    label: "⚙ Indstillinger"
+    files:
+      - label: "Forside-tekster"
+        name: "home"
+        file: "_data/settings/home.json"
+        fields:
+          - { label: "Hero-overskrift (linje 1)", name: "hero_l1", widget: "string", default: "Markedet taler." }
+          - { label: "Hero-overskrift (linje 2)", name: "hero_l2", widget: "string", default: "Vi lytter nøje." }
+          - { label: "Hero-lede", name: "hero_lede", widget: "text" }
+          - { label: "Antal analyser i alt", name: "antal_analyser", widget: "string", default: "240+" }
+          - { label: "Antal medlemmer", name: "antal_medlemmer", widget: "string", default: "1.870" }
+          - { label: "Trustpilot rating", name: "trustpilot", widget: "string", default: "4.8★" }
