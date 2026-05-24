@@ -179,16 +179,6 @@ collections:
         widget: "markdown"
         hint: "Brug ## for overskrifter, **text** for fed. Du kan også indsætte billeder af charts (fx fra TradingView)."
         required: true
-        buttons:
-          - bold
-          - italic
-          - heading-two
-          - heading-three
-          - quote
-          - bulleted-list
-          - numbered-list
-          - link
-          - image
 
       # ─── POSITION-OPLYSNING ────────────────────────────
       - label: "Position-oplysning"
