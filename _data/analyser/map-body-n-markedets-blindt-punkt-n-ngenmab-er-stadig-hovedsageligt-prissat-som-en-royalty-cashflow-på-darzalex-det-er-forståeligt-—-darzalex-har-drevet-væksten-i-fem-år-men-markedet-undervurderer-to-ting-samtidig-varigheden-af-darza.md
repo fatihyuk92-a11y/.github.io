@@ -9,7 +9,7 @@ analyse_type:
   - Fundamental
 sektor: Biotek
 marked: dansk
-tier: premium
+tier: free
 lede: Q1-tallene var en flad historie. Pipelinen er det ikke. Vi gennemgår de
   tre vigtigste fase-3 kandidater, royalty-strukturen, og hvorfor markedet
   stadig ser Genmab som en Darzalex-aktie — selv om det er en undervurdering af
