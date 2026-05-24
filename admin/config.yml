@@ -21,9 +21,6 @@ backend:
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
 
-# Editorial workflow gives you draft → review → publish stages
-publish_mode: editorial_workflow
-
 # Site URL for preview links
 site_url: https://github-io-lemon.vercel.app
 display_url: https://github-io-lemon.vercel.app
