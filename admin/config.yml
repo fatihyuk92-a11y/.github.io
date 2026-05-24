@@ -8,7 +8,7 @@
 # Authentication backend — bruger GitHub OAuth via vores egen proxy
 backend:
   name: github
-  repo: fatihyuk92-a11y/fatihyuk92-a11y.github.io
+  repo: fatihyuk92-a11y/github-io
   branch: main
   base_url: https://github-io-lemon.vercel.app
   auth_endpoint: api/auth
