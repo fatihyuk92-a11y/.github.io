@@ -1,99 +1,49 @@
-// ════════════════════════════════════════════════════════════════
-// GITHUB OAUTH — STEP 2: CALLBACK
-// ════════════════════════════════════════════════════════════════
-// GitHub redirects user back here after authorization with a `code`.
-// We exchange the code for an access token, then post it back to
-// the Decap CMS window so it can talk to GitHub on user's behalf.
-// ════════════════════════════════════════════════════════════════
+// GET /api/callback – GitHub sender brugeren hertil efter login. Koden byttes til et adgangstoken,
+// som gemmes i browseren, hvorefter brugeren sendes tilbage til /admin/.
+const { query, sendHtml, parseCookies } = require('./_lib/http');
+const { page } = require('./_lib/pages');
 
-export default async function handler(req, res) {
-  const { code } = req.query;
+module.exports = async function handler(req, res) {
+  const { code, state, error } = query(req);
+  const expected = parseCookies(req).ak_oauth_state;
+  const headers = { 'Cache-Control': 'no-store', 'Set-Cookie': 'ak_oauth_state=; Path=/api; HttpOnly; Secure; SameSite=Lax; Max-Age=0' };
+
+  if (error) return sendHtml(res, 400, page('Login blev afbrudt', 'GitHub-login blev annulleret. Gå tilbage til admin, og prøv igen.', true), headers);
+  if (!code) return sendHtml(res, 400, page('Login mislykkedes', 'GitHub sendte ingen kode tilbage. Prøv igen.', true), headers);
+  if (!state || !expected || state !== expected) {
+    return sendHtml(res, 400, page('Login udløb', 'Login-forsøget var for gammelt eller blev startet i en anden fane. Prøv igen fra admin.', true), headers);
+  }
   const clientId = process.env.OAUTH_GITHUB_CLIENT_ID;
   const clientSecret = process.env.OAUTH_GITHUB_CLIENT_SECRET;
-
-  if (!code) {
-    return res.status(400).send('Missing authorization code');
-  }
-  if (!clientId || !clientSecret) {
-    return res.status(500).send('Missing OAuth environment variables');
-  }
+  if (!clientId || !clientSecret) return sendHtml(res, 500, page('Login er ikke sat op', 'OAuth-miljøvariablerne mangler i Vercel.', true), headers);
 
   try {
-    // Exchange authorization code for access token
-    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+    const r = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code: code,
-      }),
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
+      signal: AbortSignal.timeout(10000),
     });
-
-    const tokenData = await tokenResponse.json();
-
-    if (tokenData.error) {
-      const errorPayload = {
-        token: null,
-        provider: 'github',
-        error: tokenData.error_description || tokenData.error,
-      };
-      return res.status(400).send(buildResponseHtml('error', errorPayload));
+    const data = await r.json();
+    if (!data.access_token) {
+      return sendHtml(res, 400, page('Login mislykkedes', `GitHub afviste login (${data.error_description || data.error || 'ukendt fejl'}). Prøv igen.`, true), headers);
     }
-
-    // Send token back to Decap CMS window via postMessage
-    const successPayload = {
-      token: tokenData.access_token,
-      provider: 'github',
-    };
-    return res.status(200).send(buildResponseHtml('success', successPayload));
+    const token = JSON.stringify(data.access_token);
+    const script = `<script>
+      (function () {
+        var token = ${token};
+        var remember = false;
+        try { remember = localStorage.getItem('ak_admin_remember') === '1'; } catch (e) {}
+        try {
+          (remember ? localStorage : sessionStorage).setItem('ak_admin_token', token);
+          location.replace('/admin/');
+        } catch (e) {
+          document.getElementById('msg').textContent = 'Din browser tillader ikke at gemme login. Slå cookies og lokal lagring til for siden, og prøv igen.';
+        }
+      })();
+    </script>`;
+    return sendHtml(res, 200, page('Du er logget ind', 'Sender dig videre til admin …', false, script), headers);
   } catch (err) {
-    return res.status(500).send(buildResponseHtml('error', {
-      token: null,
-      provider: 'github',
-      error: err.message,
-    }));
+    return sendHtml(res, 502, page('Login mislykkedes', 'Der var ingen forbindelse til GitHub. Prøv igen om lidt.', true), headers);
   }
-}
-
-function buildResponseHtml(status, payload) {
-  // Decap CMS listens for messages with the format:
-  // "authorization:github:STATUS:JSON_PAYLOAD"
-  const message = `authorization:github:${status}:${JSON.stringify(payload)}`;
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <title>Authenticating...</title>
-  <style>
-    body { font-family: -apple-system, sans-serif; background: #0c0c0b; color: #f5f1ea; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-    .box { text-align: center; padding: 2rem; }
-    .ok { color: #4ade80; }
-    .err { color: #f87171; }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1 class="${status === 'success' ? 'ok' : 'err'}">
-      ${status === 'success' ? '✓ Logget ind!' : '✗ Login mislykkedes'}
-    </h1>
-    <p>Du kan lukke dette vindue og vende tilbage til admin.</p>
-  </div>
-  <script>
-    (function() {
-      function receiveMessage(e) {
-        window.opener.postMessage(
-          ${JSON.stringify(message)},
-          e.origin
-        );
-        window.removeEventListener("message", receiveMessage, false);
-      }
-      window.addEventListener("message", receiveMessage, false);
-      window.opener.postMessage("authorizing:github", "*");
-    })();
-  </script>
-</body>
-</html>`;
-}
+};

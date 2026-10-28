@@ -2,22 +2,27 @@
 titel: "Vinden vender — men chartet kræver tålmodighed"
 slug: "vestas-vinden-vender"
 aktie_navn: "Vestas"
+symbol: "VWS.CO"
+tv_symbol: "OMXCOP:VWS"
+valuta: "DKK"
 dato: "2026-05-14"
-laesetid: "8 min læsning"
+status: "udgivet"
+demo: true
 setup_type: "Bullish"
-analyse_type: ["Teknisk", "Fundamental"]
-sektor: "Industri / Vind"
+analyse_type: ["Teknisk","Fundamental"]
+sektor: "Industri"
 marked: "dansk"
 tier: "premium"
 lede: "Efter 18 måneders nedtur tester aktien nu sin 200-dages glidende gennemsnit indefra for første gang siden januar 2024. Vi gennemgår tre scenarier, ordrebogen, og hvorfor cost-cutting alene ikke er nok til et bæredygtigt re-rating."
+tid: "09:15"
+forudsaetninger: "Ordreindgangen holder niveauet fra de seneste fire kvartaler, og EBIT-marginen før særlige poster når 6-8 % i 2027. Kursmålet svarer til EV/EBIT 18 på 2027-estimaterne."
+kilder: ["Vestas, delårsrapport for 3. kvartal", "Vestas, kapitalmarkedsdag", "Egne beregninger"]
+forelagt: false
 niveauer:
-  kurs: "DKK 156,80"
-  maal: "DKK 195"
-  stop: "DKK 134"
-  rr: "2,9 : 1"
+  kurs: 156.8
+  maal: 195
+  stop: 134
 fakta:
-  ticker: "VWS.CO"
-  sektor: "Industri"
   market_cap: "158 mia DKK"
   pe: "22,4"
   ev_ebitda: "11,8"
@@ -27,7 +32,6 @@ position:
   ejer: true
   tekst: "Udgiveren ejer aktier i Vestas Wind Systems på publikationstidspunktet (anskaffet i januar 2026 omkring DKK 142). Dette kan udgøre en interessekonflikt og skal indgå i din vurdering af analysens objektivitet."
 ---
-
 ## Et stille vendepunkt?
 
 Vestas har handlet i en bred sidelæns range mellem 120-160 DKK siden september 2024 efter et massivt fald fra toppen i 2020-21. Markedet har været træt af to ting: **presset margin** i et råvarespiset miljø og **politisk usikkerhed** omkring den globale energiomstilling.

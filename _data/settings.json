@@ -1,0 +1,504 @@
+{
+  "sitenavn": "Aktiekompas",
+  "forfatter": "Aktiekompas",
+  "email": "hej@aktiekompas.dk",
+  "firmanavn": "",
+  "cvr": "",
+  "hero_titel": "Forstå markedet, før du handler.",
+  "hero_tekst": "Tekniske og fundamentale analyser af amerikanske og danske aktier, en portefølje du kan følge live og en AI-assistent, der forklarer begreberne. Det hele er undervisning – beslutningen er altid din.",
+  "premium_visning": "teaser",
+  "forside_marked": "us",
+  "betalingslinks": {
+    "intro": "",
+    "plus": "",
+    "premium": ""
+  },
+  "nyhedsbrev_url": "",
+  "priser": [
+    {
+      "id": "intro",
+      "navn": "Introduktion",
+      "pris": "1.400 kr.",
+      "periode": "engangsbetaling",
+      "beskrivelse": "Et grundforløb, der giver dig fundamentet, før du investerer.",
+      "features": [
+        {
+          "tekst": "Introduktion til investeringsdepot",
+          "med": true
+        },
+        {
+          "tekst": "Valg af broker eller bank",
+          "med": true
+        },
+        {
+          "tekst": "Valg af strategi: daytrader, swingtrader eller langsigtet investor",
+          "med": true
+        },
+        {
+          "tekst": "De fundamentale og tekniske indikatorer, der driver kursudviklingen",
+          "med": true
+        },
+        {
+          "tekst": "De forskellige finansielle instrumenter",
+          "med": true
+        },
+        {
+          "tekst": "Valg af sektorer",
+          "med": true
+        }
+      ],
+      "note": "Livstidsadgang til materialet",
+      "knap": "Køb introduktion",
+      "fremhaevet": false
+    },
+    {
+      "id": "plus",
+      "navn": "Plus",
+      "pris": "199 kr.",
+      "periode": "pr. måned",
+      "beskrivelse": "Alle analyser og adgang til porteføljen.",
+      "features": [
+        {
+          "tekst": "Bog- og videoanbefalinger",
+          "med": true
+        },
+        {
+          "tekst": "Hele analysearkivet",
+          "med": true
+        },
+        {
+          "tekst": "Nye tekniske analyser",
+          "med": true
+        },
+        {
+          "tekst": "Køb- og salgsniveauer i analyserne",
+          "med": true
+        },
+        {
+          "tekst": "Adgang til porteføljen",
+          "med": true
+        },
+        {
+          "tekst": "En-til-en vejledning",
+          "med": false
+        },
+        {
+          "tekst": "Lukket Facebook-gruppe",
+          "med": false
+        },
+        {
+          "tekst": "Lukket Telegram-gruppe",
+          "med": false
+        }
+      ],
+      "note": "Ingen binding",
+      "knap": "Start Plus",
+      "fremhaevet": false
+    },
+    {
+      "id": "premium",
+      "navn": "Premium",
+      "pris": "299 kr.",
+      "periode": "pr. måned",
+      "beskrivelse": "Alt i Plus, plus personlig sparring og fællesskab.",
+      "features": [
+        {
+          "tekst": "Bog- og videoanbefalinger",
+          "med": true
+        },
+        {
+          "tekst": "Hele analysearkivet",
+          "med": true
+        },
+        {
+          "tekst": "Nye tekniske analyser",
+          "med": true
+        },
+        {
+          "tekst": "Køb- og salgsniveauer i analyserne",
+          "med": true
+        },
+        {
+          "tekst": "Adgang til porteføljen",
+          "med": true
+        },
+        {
+          "tekst": "En-til-en vejledning",
+          "med": true
+        },
+        {
+          "tekst": "Lukket Facebook-gruppe",
+          "med": true
+        },
+        {
+          "tekst": "Lukket Telegram-gruppe",
+          "med": true
+        },
+        {
+          "tekst": "Ubegrænset brug af AI-assistenten",
+          "med": true
+        }
+      ],
+      "note": "Ingen binding",
+      "knap": "Start Premium",
+      "fremhaevet": true
+    }
+  ],
+  "om_tekst": "Aktiekompas er et uafhængigt projekt, drevet af en privat investor. Her deler jeg mine analyser, min metode og min egen portefølje helt åbent, så du kan følge med i, hvordan jeg tænker – og lære at lave dine egne vurderinger.\n\nJeg er ikke autoriseret finansiel rådgiver, og intet på siden er en personlig anbefaling. Det, du finder her, er undervisningsmateriale.\n\n## Hvorfor jeg gør det\n\nDe fleste investeringsråd er enten for overfladiske eller pakket ind i fagsprog. Jeg vil gerne vise processen bag en analyse: hvad jeg kigger efter i regnskabet, hvordan jeg læser et chart, og hvordan jeg tænker risiko.\n\n*Redigér denne tekst under Indstillinger i admin.*",
+  "ticker": [
+    {
+      "symbol": "^GSPC",
+      "navn": "S&P 500"
+    },
+    {
+      "symbol": "^NDX",
+      "navn": "Nasdaq 100"
+    },
+    {
+      "symbol": "^DJI",
+      "navn": "Dow Jones"
+    },
+    {
+      "symbol": "AAPL",
+      "navn": "Apple"
+    },
+    {
+      "symbol": "MSFT",
+      "navn": "Microsoft"
+    },
+    {
+      "symbol": "NVDA",
+      "navn": "Nvidia"
+    },
+    {
+      "symbol": "AMZN",
+      "navn": "Amazon"
+    },
+    {
+      "symbol": "GOOGL",
+      "navn": "Alphabet"
+    },
+    {
+      "symbol": "META",
+      "navn": "Meta"
+    },
+    {
+      "symbol": "TSLA",
+      "navn": "Tesla"
+    },
+    {
+      "symbol": "^OMXC25",
+      "navn": "C25"
+    },
+    {
+      "symbol": "NOVO-B.CO",
+      "navn": "Novo Nordisk"
+    },
+    {
+      "symbol": "DSV.CO",
+      "navn": "DSV"
+    },
+    {
+      "symbol": "MAERSK-B.CO",
+      "navn": "Mærsk B"
+    },
+    {
+      "symbol": "VWS.CO",
+      "navn": "Vestas"
+    },
+    {
+      "symbol": "USDDKK=X",
+      "navn": "USD/DKK"
+    },
+    {
+      "symbol": "GC=F",
+      "navn": "Guld"
+    },
+    {
+      "symbol": "BTC-USD",
+      "navn": "Bitcoin"
+    }
+  ],
+  "indeks": [
+    {
+      "symbol": "^GSPC",
+      "navn": "S&P 500"
+    },
+    {
+      "symbol": "^NDX",
+      "navn": "Nasdaq 100"
+    },
+    {
+      "symbol": "^DJI",
+      "navn": "Dow Jones"
+    },
+    {
+      "symbol": "^OMXC25",
+      "navn": "C25"
+    },
+    {
+      "symbol": "^GDAXI",
+      "navn": "DAX"
+    },
+    {
+      "symbol": "^STOXX50E",
+      "navn": "Euro Stoxx 50"
+    }
+  ],
+  "danske_aktier": [
+    {
+      "symbol": "NOVO-B.CO",
+      "navn": "Novo Nordisk",
+      "tv": "OMXCOP:NOVO_B"
+    },
+    {
+      "symbol": "DSV.CO",
+      "navn": "DSV",
+      "tv": "OMXCOP:DSV"
+    },
+    {
+      "symbol": "NSIS-B.CO",
+      "navn": "Novonesis",
+      "tv": "OMXCOP:NSIS_B"
+    },
+    {
+      "symbol": "MAERSK-B.CO",
+      "navn": "Mærsk B",
+      "tv": "OMXCOP:MAERSK_B"
+    },
+    {
+      "symbol": "DANSKE.CO",
+      "navn": "Danske Bank",
+      "tv": "OMXCOP:DANSKE"
+    },
+    {
+      "symbol": "COLO-B.CO",
+      "navn": "Coloplast",
+      "tv": "OMXCOP:COLO_B"
+    },
+    {
+      "symbol": "VWS.CO",
+      "navn": "Vestas",
+      "tv": "OMXCOP:VWS"
+    },
+    {
+      "symbol": "CARL-B.CO",
+      "navn": "Carlsberg",
+      "tv": "OMXCOP:CARL_B"
+    },
+    {
+      "symbol": "PNDORA.CO",
+      "navn": "Pandora",
+      "tv": "OMXCOP:PNDORA"
+    },
+    {
+      "symbol": "GMAB.CO",
+      "navn": "Genmab",
+      "tv": "OMXCOP:GMAB"
+    },
+    {
+      "symbol": "ORSTED.CO",
+      "navn": "Ørsted",
+      "tv": "OMXCOP:ORSTED"
+    },
+    {
+      "symbol": "TRYG.CO",
+      "navn": "Tryg",
+      "tv": "OMXCOP:TRYG"
+    },
+    {
+      "symbol": "DEMANT.CO",
+      "navn": "Demant",
+      "tv": "OMXCOP:DEMANT"
+    },
+    {
+      "symbol": "GN.CO",
+      "navn": "GN Store Nord",
+      "tv": "OMXCOP:GN"
+    },
+    {
+      "symbol": "ISS.CO",
+      "navn": "ISS",
+      "tv": "OMXCOP:ISS"
+    },
+    {
+      "symbol": "JYSK.CO",
+      "navn": "Jyske Bank",
+      "tv": "OMXCOP:JYSK"
+    },
+    {
+      "symbol": "NKT.CO",
+      "navn": "NKT",
+      "tv": "OMXCOP:NKT"
+    },
+    {
+      "symbol": "ROCK-B.CO",
+      "navn": "Rockwool",
+      "tv": "OMXCOP:ROCK_B"
+    },
+    {
+      "symbol": "RBREW.CO",
+      "navn": "Royal Unibrew",
+      "tv": "OMXCOP:RBREW"
+    },
+    {
+      "symbol": "ZEAL.CO",
+      "navn": "Zealand Pharma",
+      "tv": "OMXCOP:ZEAL"
+    },
+    {
+      "symbol": "AMBU-B.CO",
+      "navn": "Ambu",
+      "tv": "OMXCOP:AMBU_B"
+    },
+    {
+      "symbol": "BAVA.CO",
+      "navn": "Bavarian Nordic",
+      "tv": "OMXCOP:BAVA"
+    },
+    {
+      "symbol": "FLS.CO",
+      "navn": "FLSmidth",
+      "tv": "OMXCOP:FLS"
+    },
+    {
+      "symbol": "SYDB.CO",
+      "navn": "Sydbank",
+      "tv": "OMXCOP:SYDB"
+    },
+    {
+      "symbol": "NDA-DK.CO",
+      "navn": "Nordea",
+      "tv": "OMXCOP:NDA_DK"
+    }
+  ],
+  "us_aktier": [
+    {
+      "symbol": "AAPL",
+      "navn": "Apple"
+    },
+    {
+      "symbol": "MSFT",
+      "navn": "Microsoft"
+    },
+    {
+      "symbol": "NVDA",
+      "navn": "Nvidia"
+    },
+    {
+      "symbol": "AMZN",
+      "navn": "Amazon"
+    },
+    {
+      "symbol": "GOOGL",
+      "navn": "Alphabet"
+    },
+    {
+      "symbol": "META",
+      "navn": "Meta"
+    },
+    {
+      "symbol": "AVGO",
+      "navn": "Broadcom"
+    },
+    {
+      "symbol": "TSLA",
+      "navn": "Tesla"
+    },
+    {
+      "symbol": "BRK-B",
+      "navn": "Berkshire Hathaway"
+    },
+    {
+      "symbol": "JPM",
+      "navn": "JPMorgan Chase"
+    },
+    {
+      "symbol": "LLY",
+      "navn": "Eli Lilly"
+    },
+    {
+      "symbol": "V",
+      "navn": "Visa"
+    },
+    {
+      "symbol": "WMT",
+      "navn": "Walmart"
+    },
+    {
+      "symbol": "ORCL",
+      "navn": "Oracle"
+    },
+    {
+      "symbol": "MA",
+      "navn": "Mastercard"
+    },
+    {
+      "symbol": "XOM",
+      "navn": "Exxon Mobil"
+    },
+    {
+      "symbol": "NFLX",
+      "navn": "Netflix"
+    },
+    {
+      "symbol": "COST",
+      "navn": "Costco"
+    },
+    {
+      "symbol": "UNH",
+      "navn": "UnitedHealth"
+    },
+    {
+      "symbol": "JNJ",
+      "navn": "Johnson & Johnson"
+    },
+    {
+      "symbol": "PG",
+      "navn": "Procter & Gamble"
+    },
+    {
+      "symbol": "HD",
+      "navn": "Home Depot"
+    },
+    {
+      "symbol": "KO",
+      "navn": "Coca-Cola"
+    },
+    {
+      "symbol": "AMD",
+      "navn": "AMD"
+    },
+    {
+      "symbol": "BAC",
+      "navn": "Bank of America"
+    }
+  ],
+  "valuta_raavarer": [
+    {
+      "symbol": "USDDKK=X",
+      "navn": "USD/DKK",
+      "tv": "FX_IDC:USDDKK"
+    },
+    {
+      "symbol": "EURDKK=X",
+      "navn": "EUR/DKK",
+      "tv": "FX_IDC:EURDKK"
+    },
+    {
+      "symbol": "GC=F",
+      "navn": "Guld",
+      "tv": "TVC:GOLD"
+    },
+    {
+      "symbol": "BZ=F",
+      "navn": "Brent-olie",
+      "tv": "TVC:UKOIL"
+    },
+    {
+      "symbol": "BTC-USD",
+      "navn": "Bitcoin",
+      "tv": "BITSTAMP:BTCUSD"
+    }
+  ]
+}

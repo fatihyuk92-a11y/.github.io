@@ -2,22 +2,27 @@
 titel: "Når regnskabet underdriver pipelinen"
 slug: "genmab-pipeline-undervurderes"
 aktie_navn: "Genmab"
+symbol: "GMAB.CO"
+tv_symbol: "OMXCOP:GMAB"
+valuta: "DKK"
 dato: "2026-05-10"
-laesetid: "9 min læsning"
+status: "udgivet"
+demo: true
 setup_type: "Bullish"
 analyse_type: ["Fundamental"]
-sektor: "Biotek"
+sektor: "Sundhed"
 marked: "dansk"
 tier: "premium"
 lede: "Q1-tallene var en flad historie. Pipelinen er det ikke. Vi gennemgår de tre vigtigste fase-3 kandidater, royalty-strukturen, og hvorfor markedet stadig ser Genmab som en Darzalex-aktie — selv om det er en undervurdering af de næste fem år."
+tid: "08:40"
+forudsaetninger: "Darzalex-royalties fortsætter til patentudløb, og mindst én af de tre fase 3-kandidater godkendes inden 2028. Værdien er beregnet med en sum-of-the-parts-model og 9 % diskonteringsrente."
+kilder: ["Genmab, årsrapport og kvartalsrapporter", "Clinicaltrials.gov", "Egne beregninger"]
+forelagt: false
 niveauer:
-  kurs: "DKK 1.190"
-  maal: "DKK 1.450"
-  stop: "DKK 1.050"
-  rr: "1,9 : 1"
+  kurs: 1190
+  maal: 1450
+  stop: 1050
 fakta:
-  ticker: "GMAB.CO"
-  sektor: "Biotek"
   market_cap: "78 mia DKK"
   pe: "18,4"
   ev_ebitda: "3,2"
@@ -27,7 +32,6 @@ position:
   ejer: true
   tekst: "Udgiveren ejer aktier i Genmab på publikationstidspunktet (anskaffet i flere intervaller mellem 2023-2025 til gennemsnitspris omkring DKK 1.080)."
 ---
-
 ## Markedets blindt punkt
 
 Genmab er stadig hovedsageligt prissat som en royalty-cashflow på Darzalex. Det er forståeligt — Darzalex har drevet væksten i fem år. Men markedet undervurderer to ting samtidig: **varigheden** af Darzalex-royalty efter LOE, og **værdien** af de tre nye fase-3 kandidater.

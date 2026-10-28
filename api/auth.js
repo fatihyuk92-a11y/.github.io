@@ -1,24 +1,27 @@
-// ════════════════════════════════════════════════════════════════
-// GITHUB OAUTH — STEP 1: AUTHORIZATION
-// ════════════════════════════════════════════════════════════════
-// When user clicks "Login with GitHub" in /admin, Decap CMS sends
-// them here. We redirect them to GitHub's OAuth authorization page.
-// ════════════════════════════════════════════════════════════════
+// GET /api/auth – starter GitHub-login til admin.
+// Kræver OAUTH_GITHUB_CLIENT_ID og OAUTH_GITHUB_CLIENT_SECRET i Vercel (samme OAuth-app som før).
+const crypto = require('crypto');
+const { sendHtml } = require('./_lib/http');
+const { page } = require('./_lib/pages');
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   const clientId = process.env.OAUTH_GITHUB_CLIENT_ID;
-
   if (!clientId) {
-    return res.status(500).send('Missing OAUTH_GITHUB_CLIENT_ID environment variable');
+    return sendHtml(res, 500, page('Login er ikke sat op', 'Miljøvariablen OAUTH_GITHUB_CLIENT_ID mangler i Vercel. Tilføj den under Settings → Environment Variables, og deploy igen.'));
   }
-
-  // Build the GitHub authorization URL
+  const state = crypto.randomBytes(16).toString('hex');
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
   const params = new URLSearchParams({
     client_id: clientId,
-    scope: 'repo,user',
-    redirect_uri: `https://${req.headers.host}/api/callback`,
+    redirect_uri: `${proto}://${host}/api/callback`,
+    scope: 'repo',
+    state,
+    allow_signup: 'false',
   });
-
-  const authUrl = `https://github.com/login/oauth/authorize?${params.toString()}`;
-  res.redirect(302, authUrl);
-}
+  res.statusCode = 302;
+  res.setHeader('Set-Cookie', `ak_oauth_state=${state}; Path=/api; HttpOnly; Secure; SameSite=Lax; Max-Age=600`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Location', `https://github.com/login/oauth/authorize?${params}`);
+  res.end();
+};

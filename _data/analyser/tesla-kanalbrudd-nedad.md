@@ -2,22 +2,27 @@
 titel: "Kanalbrudd nedad — stop ramt"
 slug: "tesla-kanalbrudd-nedad"
 aktie_navn: "Tesla"
+symbol: "TSLA"
+tv_symbol: "NASDAQ:TSLA"
+valuta: "USD"
 dato: "2026-05-12"
-laesetid: "5 min læsning"
+status: "udgivet"
+demo: true
 setup_type: "Bearish"
 analyse_type: ["Teknisk"]
-sektor: "Tech / EV"
+sektor: "Teknologi"
 marked: "internationalt"
 tier: "free"
 lede: "Aktien brød den nederste trendlinie i ugentlig timeframe i sidste uge. Volumen bekræfter. Vi gennemgår de tre næste support-niveauer og hvad der skal til for at vende setup'et."
+tid: "16:05"
+forudsaetninger: "Bruddet under den ugentlige trendkanal holder på lukkekurs, og volumen forbliver over 20-dages gennemsnittet. Kursmålet er næste støtteniveau på ugegrafen."
+kilder: ["Kursdata fra Nasdaq", "Egne tekniske analyser"]
+forelagt: false
 niveauer:
-  kurs: "USD 218"
-  maal: "USD 178"
-  stop: "USD 235"
-  rr: "Setup-revurdering"
+  kurs: 218
+  maal: 178
+  stop: 235
 fakta:
-  ticker: "TSLA"
-  sektor: "EV / Tech"
   market_cap: "$695 mia"
   pe: "68,2"
   h52: "$258"
@@ -26,7 +31,6 @@ position:
   ejer: false
   tekst: "Udgiveren har ingen position i Tesla på publikationstidspunktet."
 ---
-
 ## Bruddet er bekræftet
 
 Tesla har handlet i en stigende kanal siden bunden i april 2025. Onsdag i sidste uge brød aktien den nederste trendlinie på dagligt timeframe — og fredagen lukkede under linien på ugentligt. Det er **strukturel bekræftelse**, ikke bare en intraday-spike.
