@@ -25,14 +25,14 @@
       "navn": "Introduktion",
       "pris": "1.400 kr.",
       "periode": "engangsbetaling",
-      "beskrivelse": "Et grundforløb, der giver dig fundamentet, før du investerer.",
+      "beskrivelse": "Begynderkurset med livstidsadgang – fra depot og første handel til nøgletal, strategi og skat.",
       "features": [
         {
-          "tekst": "Introduktion til investeringsdepot",
+          "tekst": "Begynderkurset (5 moduler)",
           "med": true
         },
         {
-          "tekst": "Valg af broker eller bank",
+          "tekst": "Introduktion til investeringsdepot og valg af broker",
           "med": true
         },
         {
@@ -40,16 +40,16 @@
           "med": true
         },
         {
-          "tekst": "De fundamentale og tekniske indikatorer, der driver kursudviklingen",
+          "tekst": "Nøgletal, indikatorer og de forskellige finansielle instrumenter",
           "med": true
         },
         {
-          "tekst": "De forskellige finansielle instrumenter",
+          "tekst": "Skat og din egen investeringsplan",
           "med": true
         },
         {
-          "tekst": "Valg af sektorer",
-          "med": true
+          "tekst": "Investeringskurset (8 moduler)",
+          "med": false
         }
       ],
       "note": "Livstidsadgang til materialet",
@@ -63,6 +63,14 @@
       "periode": "pr. måned",
       "beskrivelse": "Hele arkivet med cases og indblik i porteføljen.",
       "features": [
+        {
+          "tekst": "Begynderkurset (5 moduler)",
+          "med": true
+        },
+        {
+          "tekst": "Investeringskurset (8 moduler)",
+          "med": false
+        },
         {
           "tekst": "Bog- og videoanbefalinger",
           "med": true
@@ -105,8 +113,16 @@
       "navn": "Premium",
       "pris": "299 kr.",
       "periode": "pr. måned",
-      "beskrivelse": "Alt i Plus, plus spørgetimer om metoderne og fællesskab.",
+      "beskrivelse": "Alt i Plus, plus investeringskurset, spørgetimer om metoderne og fællesskab.",
       "features": [
+        {
+          "tekst": "Begynderkurset (5 moduler)",
+          "med": true
+        },
+        {
+          "tekst": "Investeringskurset (8 moduler)",
+          "med": true
+        },
         {
           "tekst": "Bog- og videoanbefalinger",
           "med": true

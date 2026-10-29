@@ -1,0 +1,107 @@
+{
+  "kurser": [
+    {
+      "id": "begynder",
+      "navn": "Kom i gang med at investere",
+      "kort": "Begynderkurset",
+      "niveau": "Begynder",
+      "beskrivelse": "Fra nul til din første aktie – og en plan, du kan holde fast i. Fem korte moduler om depot, økonomi, analyse, strategi og skat.",
+      "for_hvem": [
+        "Du har aldrig købt en aktie – eller kun prøvet lidt",
+        "Du vil have styr på økonomien, før du investerer",
+        "Du vil forstå, hvad du gør, i stedet for at følge andres tips"
+      ],
+      "adgang": [
+        "intro",
+        "plus",
+        "premium"
+      ],
+      "satser_aar": 2026,
+      "moduler": [
+        {
+          "id": "din-foerste-aktie",
+          "titel": "Din første aktie",
+          "beskrivelse": "Depot, konto og din første ordre – trin for trin."
+        },
+        {
+          "id": "oekonomien-paa-autopilot",
+          "titel": "Økonomien på autopilot",
+          "beskrivelse": "Budget, buffer og en opsparing, der sker af sig selv."
+        },
+        {
+          "id": "aktieanalyse-paa-en-halv-time",
+          "titel": "Aktieanalyse på en halv time",
+          "beskrivelse": "Forstå forretningen, fem nøgletal og chartet."
+        },
+        {
+          "id": "din-investeringsstrategi",
+          "titel": "Din investeringsstrategi",
+          "beskrivelse": "Mål, risiko og en plan, du kan holde fast i."
+        },
+        {
+          "id": "skat-uden-hovedpine",
+          "titel": "Skat uden hovedpine",
+          "beskrivelse": "Aktieindkomst, aktiesparekonto og årsopgørelsen."
+        }
+      ]
+    },
+    {
+      "id": "investeringskurset",
+      "navn": "Investeringskurset",
+      "kort": "Investeringskurset",
+      "niveau": "Fra begynder til øvet",
+      "beskrivelse": "Hele metoden fra privatøkonomi til aktieanalyse, skat og krypto. Otte moduler, der bygger oven på hinanden – i tekst, du kan læse i dit eget tempo.",
+      "for_hvem": [
+        "Du vil forstå hele vejen fra opsparing til analyse",
+        "Du vil kunne læse et regnskab og et chart selv",
+        "Du vil have styr på skat, omkostninger og risiko"
+      ],
+      "adgang": [
+        "premium"
+      ],
+      "satser_aar": 2026,
+      "moduler": [
+        {
+          "id": "velkommen",
+          "titel": "Velkommen",
+          "beskrivelse": "Hvorfor investere, risiko og afkast – og hvordan du får mest ud af kurset."
+        },
+        {
+          "id": "privatoekonomi",
+          "titel": "Privatøkonomien først",
+          "beskrivelse": "Budget, buffer, gæld, pension og automatisk opsparing."
+        },
+        {
+          "id": "investeringsstrategi",
+          "titel": "Investeringsstrategi",
+          "beskrivelse": "Tidshorisont, spredning, fonde mod aktier, omkostninger og disciplin."
+        },
+        {
+          "id": "aktier",
+          "titel": "Sådan fungerer aktier",
+          "beskrivelse": "Ejerskab, børsen, udbytte, aktietyper og sektorer."
+        },
+        {
+          "id": "aktiehandel",
+          "titel": "Fra depot til handel",
+          "beskrivelse": "Depot, ordretyper, omkostninger, udenlandske aktier og typiske fejl."
+        },
+        {
+          "id": "aktieanalyse",
+          "titel": "Aktieanalyse",
+          "beskrivelse": "Regnskab, nøgletal, værdiansættelse og teknisk analyse."
+        },
+        {
+          "id": "skat",
+          "titel": "Skat på investeringer",
+          "beskrivelse": "Aktieindkomst, aktiesparekonto, fonde, udbytter, tab og pension."
+        },
+        {
+          "id": "kryptovaluta",
+          "titel": "Kryptovaluta",
+          "beskrivelse": "Bitcoin, stablecoins, opbevaring, risici og skat."
+        }
+      ]
+    }
+  ]
+}
