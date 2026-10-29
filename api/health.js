@@ -14,6 +14,7 @@ module.exports = async function handler(req, res) {
     ai: Boolean(process.env.ANTHROPIC_API_KEY),
     aiModel: process.env.AI_MODEL || 'claude-haiku-5-5',
     login: Boolean(process.env.OAUTH_GITHUB_CLIENT_ID && process.env.OAUTH_GITHUB_CLIENT_SECRET),
+    rebuild: Boolean(process.env.CRON_SECRET && process.env.DEPLOY_HOOK_URL), // daglig genopbygning (api/rebuild.js)
     quotes,
   }, { 'Cache-Control': 'no-store' });
 };

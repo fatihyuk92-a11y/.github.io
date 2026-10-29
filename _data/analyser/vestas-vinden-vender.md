@@ -1,5 +1,5 @@
 ---
-titel: "Vinden vender — men chartet kræver tålmodighed"
+titel: "Test af 200-dages gennemsnittet – og hvad regnskabet siger"
 slug: "vestas-vinden-vender"
 aktie_navn: "Vestas"
 symbol: "VWS.CO"
@@ -8,20 +8,17 @@ valuta: "DKK"
 dato: "2026-05-14"
 status: "udgivet"
 demo: true
-setup_type: "Bullish"
+setup_type: "Neutral"
 analyse_type: ["Teknisk","Fundamental"]
 sektor: "Industri"
 marked: "dansk"
 tier: "premium"
-lede: "Efter 18 måneders nedtur tester aktien nu sin 200-dages glidende gennemsnit indefra for første gang siden januar 2024. Vi gennemgår tre scenarier, ordrebogen, og hvorfor cost-cutting alene ikke er nok til et bæredygtigt re-rating."
+lede: "Efter 18 måneders nedtur testede Vestas sit 200-dages glidende gennemsnit indefra for første gang siden januar 2024. Casen viser, hvordan man læser sådan en test, hvorfor volumen siger mere end prisen, og hvordan man skiller service og nye møller ad i regnskabet."
 tid: "09:15"
-forudsaetninger: "Ordreindgangen holder niveauet fra de seneste fire kvartaler, og EBIT-marginen før særlige poster når 6-8 % i 2027. Kursmålet svarer til EV/EBIT 18 på 2027-estimaterne."
-kilder: ["Vestas, delårsrapport for 3. kvartal", "Vestas, kapitalmarkedsdag", "Egne beregninger"]
+kilder: ["Vestas, delårsrapport for 1. kvartal 2026", "Vestas, kapitalmarkedsdag", "Egne beregninger"]
 forelagt: false
 niveauer:
   kurs: 156.8
-  maal: 195
-  stop: 134
 fakta:
   market_cap: "158 mia DKK"
   pe: "22,4"
@@ -30,48 +27,61 @@ fakta:
   l52: "119,40"
 position:
   ejer: true
-  tekst: "Udgiveren ejer aktier i Vestas Wind Systems på publikationstidspunktet (anskaffet i januar 2026 omkring DKK 142). Dette kan udgøre en interessekonflikt og skal indgå i din vurdering af analysens objektivitet."
+  tekst: "Udgiveren ejer aktier i Vestas Wind Systems på publikationstidspunktet (anskaffet i januar 2026 omkring DKK 142). Dette kan udgøre en interessekonflikt og skal indgå i din vurdering af casens objektivitet."
 ---
-## Et stille vendepunkt?
+## Udgangspunktet
 
-Vestas har handlet i en bred sidelæns range mellem 120-160 DKK siden september 2024 efter et massivt fald fra toppen i 2020-21. Markedet har været træt af to ting: **presset margin** i et råvarespiset miljø og **politisk usikkerhed** omkring den globale energiomstilling.
+Vestas havde handlet i en bred sidelæns range mellem 120 og 160 kr. siden september 2024 efter et stort fald fra toppen i 2020-21. To ting prægede aktien: **presset indtjening** i en periode med høje råvarepriser og **politisk usikkerhed** om den globale energiomstilling.
 
-I de seneste fire uger er noget begyndt at ændre sig. Ikke prisen — den er kun knap 7% over månedlig støtte. Men strukturen omkring prisen.
+I ugerne op til casen ændrede noget sig. Ikke prisen – den lå kun knap 7 % over den månedlige støtte – men strukturen omkring prisen. Det er den, casen handler om.
 
 > Markedet handler ikke nyheder. Det handler ændringen i forventninger.
 
-## Det tekniske setup
+## Hvad er en test af 200-dages gennemsnittet?
 
-På ugentlig timeframe tester aktien nu sin 200-dages glidende gennemsnit (~158 DKK) indefra. Det er første gang siden januar 2024. Mere interessant: volumen på sidste tre uger er stigende på de grønne stænger og faldende på de røde — en klassisk akkumulations-signatur.
+200-dages glidende gennemsnit er gennemsnittet af de seneste 200 lukkekurser. Mange bruger det som en grov skillelinje mellem en stigende og en faldende trend. Når en aktie, der længe har handlet under gennemsnittet, når op til det nedefra, taler man om en test *indefra*.
 
-### Tre tekniske scenarier
+Ved udgivelsen lå gennemsnittet omkring 158 kr., og det var første gang siden januar 2024, at kursen nåede derop. Det interessante var ikke selve berøringen, men det, der skete omkring den: Volumen steg på dage med stigende kurs og faldt på dage med faldende kurs. Det mønster kaldes *akkumulation*. Det er et tegn på interesse – ikke en garanti for, hvad der sker bagefter.
 
-1. **Bullish breakout** — Lukning over MA200 (~158 DKK) på ugentlig basis åbner for 175, dernæst 195. Volumen-bekræftelse er kritisk.
-2. **Konsolidering** — Range mellem 145-160 fortsætter. Trade range, ikke retning. Sandsynligheden er højest her.
-3. **Bearish failure** — Tab af 145 åbner for retest af bunden ved 120. Hvis 120 svigter, er hele basis-strukturen forfejlet.
+### Tre udfald, metoden holder øje med
+
+Når en aktie tester et vigtigt gennemsnit, er der grundlæggende tre udfald. Metoden går ud på at beskrive, hvad hvert udfald kræver – ikke at gætte, hvilket der indtræffer.
+
+1. **Brud** – kursen lukker over gennemsnittet på ugebasis, helst med stigende volumen. Et brud uden volumen er svagere.
+2. **Konsolidering** – kursen bliver i det tidligere interval og bevæger sig sidelæns, mens markedet venter på ny information.
+3. **Afvisning** – kursen vender ned fra gennemsnittet og falder tilbage mod den nederste del af intervallet.
+
+Hvilket udfald det blev, kan du selv følge på grafen øverst på siden. Pointen er, at man på forhånd har gjort sig klart, hvad hvert udfald betyder for ens egen læsning.
 
 ## Det fundamentale billede
 
-Q1 2026 viste den første EBIT-margin over 7% siden 2022 — men her bør man være forsigtig. Forbedringen kommer primært fra **service-forretningen**, hvor marginen er strukturelt højere. Den underliggende ordre-margin fra nye turbiner er kun marginalt forbedret.
+Delårsrapporten for 1. kvartal 2026 viste den første EBIT-margin over 7 % siden 2022. Her er det værd at se efter, *hvor* forbedringen kommer fra – det er en af de vigtigste vaner i regnskabslæsning.
 
-Det er ikke nødvendigvis dårligt. Service-forretningen vokser med ordrebogen, og den er forudsigelig. Men hvis cost-cutting historien er det eneste markedet betaler for, vil aktien strugler med at bryde 195-niveauet vedvarende.
+Forbedringen kom primært fra **service-forretningen**, hvor marginen er strukturelt højere. Marginen på nye møller var kun marginalt bedre. Det er ikke nødvendigvis dårligt – service vokser med antallet af installerede møller og er forholdsvis forudsigelig – men det betyder, at den samlede margin kan stige, uden at kerneforretningen har ændret sig.
 
-### Hvad ordrebogen fortæller
+### Sådan læser man ordrebogen
 
-- Ordrebog: **€56,2 mia** ved udgang af Q1 — rekordniveau
-- Offshore-andelen vokser hurtigere end onshore
-- Geografisk: USA-andelen falder (forventet pga. IRA-usikkerhed), Europa stiger
-- Pricing power genvundet — nye kontrakter prises 12-18% over 2023-niveau
+- **Ordrebog:** 56,2 mia. euro ved udgangen af 1. kvartal – det højeste niveau hidtil
+- **Offshore** voksede hurtigere end onshore
+- **Geografi:** USA's andel faldt, mens Europas steg
+- **Priser:** nye kontrakter blev prissat 12-18 % over niveauet i 2023
 
-## Hvad kan gå galt?
+En stor ordrebog er kun værdifuld, hvis ordrerne kan leveres med overskud. Læs derfor altid ordrebogen sammen med marginen på nye ordrer – ikke hver for sig.
 
-1. **USA-eksponering forværres** — yderligere policy-skift kan ramme amerikanske projekter
-2. **Råvarepriser vender** — stål og kobber er volatile
-3. **Eksekvering på offshore** — historisk har Vestas haft udfordringer her
-4. **Markedsregime-skift** — hvis growth-til-value rotation accelererer, kan industri-aktier blive ramt
+## Hvad kan ændre billedet?
 
-## Sammenfatning
+Enhver case har faktorer, der kan vende den. For Vestas var de vigtigste:
 
-Vestas tester et vigtigt teknisk niveau med fundamental medvind for første gang i 18 måneder. Risk/reward i et bullish scenarie er attraktivt (~2,9:1) hvis du tror på breakout-casen. Konsolidering er det mest sandsynlige base-scenarie. Tab af 145 er signal til at revurdere.
+1. **Politik i USA** – nye ændringer i støtteordningerne kan ramme amerikanske projekter.
+2. **Råvarepriser** – stål og kobber svinger meget og fylder meget i omkostningerne.
+3. **Eksekvering offshore** – Vestas har tidligere haft udfordringer med store offshore-projekter.
+4. **Markedsstemning** – hvis investorer flytter fra vækst- til value-aktier, kan industriaktier blive ramt uanset regnskabet.
 
-Det er ikke en "back up the truck"-case. Det er en case med tålmodighed: vent på lukningen over MA200 hvis du vil mindske risiko, eller bygg position gradvist over tid hvis din horisont er længere.
+## Hvad casen lærer
+
+- **En test er ikke et brud.** At kursen rører 200-dages gennemsnittet, er en begivenhed at følge – ikke en konklusion.
+- **Volumen siger mere end prisen.** Mønstret i volumen fortæller, om bevægelsen har bred opbakning.
+- **Skil forretningsområderne ad.** En stigende samlet margin kan dække over, at kerneforretningen står stille.
+- **Beslut på forhånd, hvad udfaldene betyder.** Så er det sværere at lade sig styre af følelser bagefter.
+
+Casen tager ikke stilling til, om aktien passer i en portefølje. Det afhænger af den enkeltes økonomi, mål og risikovillighed.

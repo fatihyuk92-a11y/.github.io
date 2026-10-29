@@ -4,10 +4,15 @@
   "email": "hej@aktiekompas.dk",
   "firmanavn": "",
   "cvr": "",
+  "adresse": "",
   "hero_titel": "Forstå markedet, før du handler.",
-  "hero_tekst": "Tekniske og fundamentale analyser af amerikanske og danske aktier, en portefølje du kan følge live og en AI-assistent, der forklarer begreberne. Det hele er undervisning – beslutningen er altid din.",
+  "hero_tekst": "Lær at læse aktiemarkedet med cases fra amerikanske og danske aktier – teknisk og fundamentalt. Følg porteføljen med live kurser, og få begreberne forklaret af en AI-assistent. Det hele er undervisning – beslutningen er altid din.",
   "premium_visning": "teaser",
   "forside_marked": "us",
+  "indholdstype": "undervisning",
+  "vis_portefolje": true,
+  "portefolje_forsinkelse": 30,
+  "portefolje_type": "model",
   "betalingslinks": {
     "intro": "",
     "plus": "",
@@ -31,7 +36,7 @@
           "med": true
         },
         {
-          "tekst": "Valg af strategi: daytrader, swingtrader eller langsigtet investor",
+          "tekst": "Forskellen på daytrading, swingtrading og langsigtet investering",
           "med": true
         },
         {
@@ -56,7 +61,7 @@
       "navn": "Plus",
       "pris": "199 kr.",
       "periode": "pr. måned",
-      "beskrivelse": "Alle analyser og adgang til porteføljen.",
+      "beskrivelse": "Hele arkivet med cases og indblik i porteføljen.",
       "features": [
         {
           "tekst": "Bog- og videoanbefalinger",
@@ -67,19 +72,19 @@
           "med": true
         },
         {
-          "tekst": "Nye tekniske analyser",
+          "tekst": "Nye cases løbende",
           "med": true
         },
         {
-          "tekst": "Køb- og salgsniveauer i analyserne",
+          "tekst": "Tekniske niveauer forklaret i hver case",
           "med": true
         },
         {
-          "tekst": "Adgang til porteføljen",
+          "tekst": "Indblik i porteføljen",
           "med": true
         },
         {
-          "tekst": "En-til-en vejledning",
+          "tekst": "Spørgetime om metoderne",
           "med": false
         },
         {
@@ -100,7 +105,7 @@
       "navn": "Premium",
       "pris": "299 kr.",
       "periode": "pr. måned",
-      "beskrivelse": "Alt i Plus, plus personlig sparring og fællesskab.",
+      "beskrivelse": "Alt i Plus, plus spørgetimer om metoderne og fællesskab.",
       "features": [
         {
           "tekst": "Bog- og videoanbefalinger",
@@ -111,19 +116,19 @@
           "med": true
         },
         {
-          "tekst": "Nye tekniske analyser",
+          "tekst": "Nye cases løbende",
           "med": true
         },
         {
-          "tekst": "Køb- og salgsniveauer i analyserne",
+          "tekst": "Tekniske niveauer forklaret i hver case",
           "med": true
         },
         {
-          "tekst": "Adgang til porteføljen",
+          "tekst": "Indblik i porteføljen",
           "med": true
         },
         {
-          "tekst": "En-til-en vejledning",
+          "tekst": "Spørgetime om metoderne",
           "med": true
         },
         {
@@ -144,7 +149,7 @@
       "fremhaevet": true
     }
   ],
-  "om_tekst": "Aktiekompas er et uafhængigt projekt, drevet af en privat investor. Her deler jeg mine analyser, min metode og min egen portefølje helt åbent, så du kan følge med i, hvordan jeg tænker – og lære at lave dine egne vurderinger.\n\nJeg er ikke autoriseret finansiel rådgiver, og intet på siden er en personlig anbefaling. Det, du finder her, er undervisningsmateriale.\n\n## Hvorfor jeg gør det\n\nDe fleste investeringsråd er enten for overfladiske eller pakket ind i fagsprog. Jeg vil gerne vise processen bag en analyse: hvad jeg kigger efter i regnskabet, hvordan jeg læser et chart, og hvordan jeg tænker risiko.\n\n*Redigér denne tekst under Indstillinger i admin.*",
+  "om_tekst": "Aktiekompas er et uafhængigt projekt, drevet af en privat investor. Her deler jeg mine analyser, min metode og porteføljen helt åbent, så du kan følge med i, hvordan jeg tænker – og lære at lave dine egne vurderinger.\n\nJeg er ikke autoriseret finansiel rådgiver, og intet på siden er en personlig anbefaling. Det, du finder her, er undervisningsmateriale.\n\n## Hvorfor jeg gør det\n\nDe fleste investeringsråd er enten for overfladiske eller pakket ind i fagsprog. Jeg vil gerne vise processen bag en analyse: hvad jeg kigger efter i regnskabet, hvordan jeg læser et chart, og hvordan jeg tænker risiko.\n\n*Redigér denne tekst under Indstillinger i admin.*",
   "ticker": [
     {
       "symbol": "^GSPC",

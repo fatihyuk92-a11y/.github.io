@@ -44,7 +44,7 @@ function apply({ push = true } = {}) {
     return b.dataset.date.localeCompare(a.dataset.date);
   });
   sorted.forEach((c) => grid.append(c));
-  count.textContent = `Viser ${shown} af ${cards.length} ${cards.length === 1 ? 'analyse' : 'analyser'}`;
+  count.textContent = `Viser ${shown} af ${cards.length} ${cards.length === 1 ? count.dataset.one || 'analyse' : count.dataset.many || 'analyser'}`;
   empty.hidden = shown > 0;
   if (push) {
     const p = new URLSearchParams();

@@ -11,7 +11,7 @@ const HOME_FAQ = [
   { q: 'Hvor kommer kurserne fra?', a: '<p>Kurserne hentes fra Yahoo Finance via sitets egen server og opdateres løbende. De kan være forsinkede op til 15 minutter og er kun til information.</p>' },
 ];
 
-function featureAnalysis(a) {
+function featureAnalysis(a, edu) {
   const n = a.niveauer;
   return html`<article class="feature" data-quote="${a.symbol}" data-spark="1mo">
   <a class="feature__link" href="${C.analysisUrl(a)}"><span class="sr-only">Læs analysen: ${a.aktie}: ${a.titel}</span></a>
@@ -21,35 +21,37 @@ function featureAnalysis(a) {
   </div>
   <h3 class="feature__title">${a.aktie}: ${a.titel}</h3>
   <p class="feature__lede">${a.lede}</p>
-  <div class="acard__chips">${C.setupChip(a.setup)}${C.typeChips(a.types)}${a.tier === 'premium' ? C.premiumChip() : ''}${a.demo ? C.demoChip() : ''}</div>
+  <div class="acard__chips">${edu ? '' : C.setupChip(a.setup)}${C.typeChips(a.types)}${a.tier === 'premium' ? C.premiumChip() : ''}${a.demo ? C.demoChip() : ''}</div>
   <div class="feature__chart">
     <div class="feature__now"><span class="feature__nowlabel">Kurs nu</span><span class="feature__price" data-f="price">–</span><span class="delta" data-f="chg">&nbsp;</span></div>
     <svg class="spark spark--lg" viewBox="0 0 320 90" preserveAspectRatio="none" data-f="spark" aria-hidden="true"></svg>
     <p class="feature__sparklabel">Kursen den seneste måned</p>
   </div>
-  ${n.kurs != null ? html`<dl class="levels">
+  ${n.kurs != null && !edu ? html`<dl class="levels">
     <div><dt>Kurs ved analysen</dt><dd>${fmtPrice(n.kurs)}</dd></div>
     ${a.tier === 'premium' ? html`<div><dt>Kursmål og stop</dt><dd class="levels__lock">${icon('lock', { size: 15 })}For medlemmer</dd></div>` : html`
     ${n.maal != null ? html`<div><dt>Kursmål</dt><dd>${fmtPrice(n.maal)}</dd></div>` : ''}
     ${n.stop != null ? html`<div><dt>Stop</dt><dd>${fmtPrice(n.stop)}</dd></div>` : ''}`}
     <div><dt>Siden analysen</dt><dd><span class="delta delta--lg" data-f="since" data-base="${n.kurs}">&nbsp;</span></dd></div>
   </dl>` : ''}
-  <span class="feature__cta">Læs analysen ${icon('arrowRight', { size: 18 })}</span>
+  <span class="feature__cta">${edu ? 'Læs casen' : 'Læs analysen'} ${icon('arrowRight', { size: 18 })}</span>
 </article>`;
 }
 
-function latestRow(a) {
+function latestRow(a, edu) {
   return html`<li class="lrow"${a.symbol ? html` data-quote="${a.symbol}"` : ''}>
   <a href="${C.analysisUrl(a)}" class="lrow__link">
-    <span class="lrow__top"><span class="acard__symbol">${(a.symbol || a.aktie).replace(/\.CO$/, '')}</span>${C.setupChip(a.setup)}${a.tier === 'premium' ? C.premiumChip() : ''}${a.demo ? C.demoChip() : ''}</span>
+    <span class="lrow__top"><span class="acard__symbol">${(a.symbol || a.aktie).replace(/\.CO$/, '')}</span>${edu ? C.typeChips(a.types.slice(0, 1)) : C.setupChip(a.setup)}${a.tier === 'premium' ? C.premiumChip() : ''}${a.demo ? C.demoChip() : ''}</span>
     <span class="lrow__title">${a.aktie}: ${a.titel}</span>
     <span class="lrow__lede">${a.lede}</span>
-    <span class="lrow__foot"><span>${fmtDate(a.dato, { short: true })}</span>${a.niveauer.kurs != null && a.symbol ? html`<span>Siden analysen <span class="delta" data-f="since" data-base="${a.niveauer.kurs}">&nbsp;</span></span>` : ''}</span>
+    <span class="lrow__foot"><span>${fmtDate(a.dato, { short: true })}</span>${a.niveauer.kurs != null && a.symbol && !edu ? html`<span>Siden analysen <span class="delta" data-f="since" data-base="${a.niveauer.kurs}">&nbsp;</span></span>` : ''}</span>
   </a>
 </li>`;
 }
 
 function portfolioTeaser(site) {
+  if (!site.settings.vis_portefolje) return '';
+  const delay = site.settings.portefolje_forsinkelse;
   const open = site.portfolio.filter((p) => p.status === 'aaben');
   const visible = open.filter((p) => p.synlighed === 'offentlig').slice(0, 5);
   const hidden = open.length - visible.length;
@@ -57,14 +59,14 @@ function portfolioTeaser(site) {
   return html`<section class="band band--white" aria-labelledby="pf-title">
   <div class="wrap pfteaser">
     <div class="pfteaser__copy">
-      <h2 id="pf-title">Følg porteføljen, også når det går den forkerte vej</h2>
-      <p>Alle købte og solgte aktier vises med købskurs og dato, og afkastet opdateres løbende. Så kan du selv vurdere, hvordan metoden holder i praksis.</p>
+      <h2 id="pf-title">${site.model ? 'Følg modelporteføljen, også når det går den forkerte vej' : 'Se porteføljen, også når det går den forkerte vej'}</h2>
+      <p>${site.model ? 'Tænkte køb og salg vises med kurs og dato, og afkastet opdateres løbende – så du kan se, hvordan metoden ville have klaret sig. Der er ikke handlet for rigtige penge.' : 'Mine egne køb og salg vises med kurs og dato, og afkastet opdateres løbende. Så kan du selv vurdere, hvordan metoden holder i praksis.'}${delay ? ` Handler vises med ${delay} dages forsinkelse – det er gennemsigtighed, ikke signaler.` : ''}</p>
       <dl class="statrow" data-pf-summary>
         <div class="stat"><dt>Åbne positioner</dt><dd>${open.length}</dd></div>
         <div class="stat"><dt>${hidden > 0 ? 'Gns. afkast, offentlige' : 'Gennemsnitligt afkast'}</dt><dd data-pf-avg>–</dd></div>
         <div class="stat"><dt>Lukkede handler</dt><dd>${site.portfolio.filter((p) => p.status === 'lukket').length}</dd></div>
       </dl>
-      <a class="btn btn--secondary" href="/portefolje/">Se hele porteføljen</a>
+      <a class="btn btn--secondary" href="/portefolje/">${site.model ? 'Se hele modelporteføljen' : 'Se hele porteføljen'}</a>
       ${hasDemo ? html`<p class="smallnote">Porteføljen viser i øjeblikket eksempeldata.</p>` : ''}
     </div>
     <div class="pfteaser__table">
@@ -92,6 +94,13 @@ const STEPS = [
   { t: 'Teknisk', d: 'Trend, støtte og modstand bruges til timing. Chartet bestemmer hvornår – ikke om.' },
   { t: 'Risiko', d: 'Hver analyse har et stop og scenarier for, hvad der kan gå galt. Uden risikoramme er det bare en mening.' },
 ];
+// I undervisningstilstand forklarer trinnene metoden uden handelsinstrukser
+const STEPS_EDU = [
+  { t: 'Makro', d: 'Renter, valuta og sektorrotation sætter rammen. Du lærer at læse, om vinden er med eller imod markedet.' },
+  { t: 'Fundamental', d: 'Regnskab, pengestrømme og værdiansættelse – gennemgået på rigtige selskaber, så du kan gøre det selv.' },
+  { t: 'Teknisk', d: 'Trend, støtte og modstand viser, hvordan markedet har handlet en aktie. Chartet forklarer forløbet – det forudsiger det ikke.' },
+  { t: 'Risiko', d: 'Hver case gennemgår scenarier for, hvad der kan gå galt. Hvordan du selv styrer risiko, afhænger af din situation.' },
+];
 
 /** Forsidens hovedmarked (vælges i admin under Indstillinger → Generelt). */
 function mainMarket(s) {
@@ -103,6 +112,7 @@ function mainMarket(s) {
 module.exports = function homePage(site) {
   const s = site.settings;
   const mk = mainMarket(s);
+  const edu = site.edu;
   const pub = site.analyses;
   const feature = pub.find((a) => a.symbol && a.niveauer.kurs != null) || pub[0];
   const rest = pub.filter((a) => a !== feature).slice(0, 4);
@@ -120,7 +130,7 @@ module.exports = function homePage(site) {
       <ul class="hero__facts">
         <li>${icon('check', { size: 18 })}Ingen binding på medlemskaber</li>
         <li>${icon('check', { size: 18 })}${mk.both}</li>
-        <li>${icon('check', { size: 18 })}Porteføljen vises åbent</li>
+        <li>${icon('check', { size: 18 })}${site.model ? 'Modelporteføljen vises åbent' : 'Porteføljen vises åbent'}</li>
       </ul>
     </div>
     <div class="hero__board">${S.compassCard(site, { list: mk.list, adj: mk.adj })}</div>
@@ -153,14 +163,14 @@ module.exports = function homePage(site) {
     <div class="sechead">
       <div>
         <h2 id="latest-title">Nyeste analyser</h2>
-        <p>Hver analyse følger samme opskrift: teknisk setup, fundamental case, risiko og konkrete niveauer.</p>
+        <p>${edu ? 'Hver case viser metoden på en rigtig aktie: teknisk billede, fundamental case og risici – så du lærer at gøre det selv.' : 'Hver analyse følger samme opskrift: teknisk setup, fundamental case, risiko og konkrete niveauer.'}</p>
       </div>
       <a class="textlink" href="/analyser/">Alle ${pub.length} analyser ${icon('arrowRight', { size: 16 })}</a>
     </div>
     ${feature ? html`<div class="latest">
-      ${featureAnalysis(feature)}
+      ${featureAnalysis(feature, edu)}
       <div class="latest__side">
-        ${rest.length ? html`<ol class="latest__list">${rest.map(latestRow)}</ol>` : ''}
+        ${rest.length ? html`<ol class="latest__list">${rest.map((a) => latestRow(a, edu))}</ol>` : ''}
         <a class="latest__all" href="/analyser/"><span><strong>Se hele arkivet</strong><span>Søg og filtrér i alle ${pub.length} analyser</span></span>${icon('arrowRight', { size: 20 })}</a>
       </div>
     </div>` : html`<p class="empty">Der er ingen analyser endnu. Opret den første i admin.</p>`}
@@ -195,7 +205,7 @@ ${portfolioTeaser(site)}
       <a class="textlink" href="/metode/">Læs om metoden ${icon('arrowRight', { size: 16 })}</a>
     </div>
     <ol class="steps">
-      ${STEPS.map((st, i) => html`<li class="step"><span class="step__n">${i + 1}</span><h3>${st.t}</h3><p>${st.d}</p></li>`)}
+      ${(edu ? STEPS_EDU : STEPS).map((st, i) => html`<li class="step"><span class="step__n">${i + 1}</span><h3>${st.t}</h3><p>${st.d}</p></li>`)}
     </ol>
   </div>
 </section>

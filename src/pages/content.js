@@ -65,13 +65,22 @@ const METHOD = [
   { t: 'Risiko', lead: 'Uden ramme er det bare en mening.', p: 'Hver analyse slutter med et stop og scenarier for, hvad der kan gå galt. Positionsstørrelsen afhænger af din risikoprofil – ikke af min.', list: ['Bull-, base- og bear-scenarie', 'Stop placeret efter den tekniske struktur', 'Hvad sker der, hvis hele casen falder fra hinanden?', 'Hvordan aktien passer ind i resten af porteføljen'] },
 ];
 
+const METHOD_EDU = [
+  METHOD[0],
+  METHOD[1],
+  { t: 'Teknisk', lead: 'Forløbet, ikke forudsigelsen.', p: 'Chartet viser, hvordan markedet har handlet aktien: trend, støtte, modstand og volumen. Jeg bruger historiske forløb til at vise, hvordan man læser et chart – ikke til at forudsige, hvor kursen går hen.', list: ['Trend og brud i trendstrukturen', 'Støtte og modstand, der har holdt før', 'Volumen som bekræftelse', 'RSI, MACD og glidende gennemsnit forklaret med eksempler'] },
+  { t: 'Risiko', lead: 'Hvad skal der til, før casen ikke holder?', p: 'Hver case gennemgår scenarier for, hvad der kan gå galt, og hvilke forudsætninger der bærer den. Hvordan du selv styrer risiko og positionsstørrelse, afhænger af din økonomi og risikovillighed – det er din beslutning.', list: ['Bull-, base- og bear-scenarie', 'De forudsætninger, casen hviler på', 'Hvad sker der, hvis hele casen falder fra hinanden?', 'Begreber som spredning, positionsstørrelse og stop-loss forklaret generelt'] },
+];
+
 function metodePage(site) {
+  const edu = site.edu;
+  const steps = edu ? METHOD_EDU : METHOD;
   const body = html`
 ${C.pageHead({ title: 'Metoden', intro: 'Fire trin, i samme rækkefølge hver gang. Hvert trin vurderes for sig, så du kan se præcis, hvor casen er stærk, og hvor den er svag.' })}
 <section class="band band--white band--flush">
   <div class="wrap">
     <ol class="method">
-      ${METHOD.map((m, i) => html`<li class="method__step">
+      ${steps.map((m, i) => html`<li class="method__step">
         <div class="method__n" aria-hidden="true">${i + 1}</div>
         <div class="method__body">
           <h2>${m.t}</h2>
@@ -85,11 +94,15 @@ ${C.pageHead({ title: 'Metoden', intro: 'Fire trin, i samme rækkefølge hver ga
 </section>
 <section class="band band--paper">
   <div class="wrap">
-    <div class="sechead"><div><h2>Det får du i hver analyse</h2></div></div>
+    <div class="sechead"><div><h2>${edu ? 'Det får du i hver case' : 'Det får du i hver analyse'}</h2></div></div>
     <div class="trio">
-      <div class="trio__item">${icon('target', { size: 26 })}<h3>Klare niveauer</h3><p>Kurs ved analysen, kursmål og stop – så du aldrig skal gætte, hvad der menes.</p></div>
+      ${edu
+        ? html`<div class="trio__item">${icon('target', { size: 26 })}<h3>Metoden i praksis</h3><p>Teknisk og fundamental analyse gennemgået trin for trin på en rigtig aktie – så du kan gøre det selv.</p></div>`
+        : html`<div class="trio__item">${icon('target', { size: 26 })}<h3>Klare niveauer</h3><p>Kurs ved analysen, kursmål og stop – så du aldrig skal gætte, hvad der menes.</p></div>`}
       <div class="trio__item">${icon('shield', { size: 26 })}<h3>Egne positioner oplyst</h3><p>Ejer jeg selv aktien, står det i analysen. Interessekonflikter skal være synlige.</p></div>
-      <div class="trio__item">${icon('pulse', { size: 26 })}<h3>Opfølgning live</h3><p>Kursudviklingen siden analysen vises automatisk, så alle kan se, hvordan casen holder.</p></div>
+      ${edu
+        ? html`<div class="trio__item">${icon('pulse', { size: 26 })}<h3>Kilder og scenarier</h3><p>Hvor tallene kommer fra, og hvad der skal til, før casen ikke længere holder.</p></div>`
+        : html`<div class="trio__item">${icon('pulse', { size: 26 })}<h3>Opfølgning live</h3><p>Kursudviklingen siden analysen vises automatisk, så alle kan se, hvordan casen holder.</p></div>`}
     </div>
   </div>
 </section>
@@ -111,11 +124,11 @@ ${C.pageHead({ title: `Om ${s.sitenavn}`, intro: 'Et uafhængigt projekt uden ba
         <ul class="ticklist">
           <li>${icon('check', { size: 18 })}Egne positioner oplyses i hver analyse</li>
           <li>${icon('check', { size: 18 })}Ingen betaling fra børsnoterede selskaber</li>
-          <li>${icon('check', { size: 18 })}Porteføljen vises åbent – også tabene</li>
+          ${s.vis_portefolje ? html`<li>${icon('check', { size: 18 })}${site.model ? 'Modelporteføljen' : 'Porteføljen'} vises åbent – også tabene</li>` : ''}
           <li>${icon('check', { size: 18 })}Analyserne skrives af et menneske, ikke en AI</li>
         </ul>
       </div>
-      ${s.email ? html`<div class="asidebox"><h2>Kontakt</h2><p>Spørgsmål om sitet eller om handel med aktier? Skriv til <a class="textlink" href="mailto:${s.email}">${s.email}</a>.</p></div>` : ''}
+      ${s.email ? html`<div class="asidebox"><h2>Kontakt</h2><p>Spørgsmål til siden eller metoderne? Skriv til <a class="textlink" href="mailto:${s.email}">${s.email}</a>. Jeg giver ikke personlig rådgivning om dine investeringer.</p></div>` : ''}
     </aside>
   </div>
 </section>
@@ -123,24 +136,34 @@ ${C.pageHead({ title: `Om ${s.sitenavn}`, intro: 'Et uafhængigt projekt uden ba
   return { path: '/om/', html: layout(site, { title: `Om ${s.sitenavn}`, path: '/om/', active: 'om', body }) };
 }
 
-const FAQ_GROUPS = [
+function faqGroups(site) {
+  const edu = site.edu;
+  const s = site.settings;
+  return [
   { title: 'Det juridiske', items: [
-    { q: 'Er det her finansiel rådgivning?', a: '<p><strong>Nej.</strong> Sitet er en undervisnings- og analyseplatform. Udgiveren er ikke autoriseret som finansiel rådgiver og er ikke under Finanstilsynets tilsyn. Alt indhold er holdninger og research – ikke personlig rådgivning.</p>' },
-    { q: 'Hvad betyder køb- og salgsniveauer?', a: '<p>Det er analysens tekniske niveauer – fx kursen ved analysen, et kursmål og et stop – som en del af undervisningen. Det er ikke en instruks til dig. Du vurderer selv, om noget passer til din situation.</p>' },
+    { q: 'Er det her finansiel rådgivning?', a: '<p><strong>Nej.</strong> Sitet er en undervisningsplatform. Indholdet er generelt, er det samme for alle og tager ikke højde for din økonomi, dine mål eller din risikovillighed. Udgiveren er ikke en finansiel virksomhed med tilladelse fra Finanstilsynet og giver ikke personlig investeringsrådgivning.</p>' },
+    edu
+      ? { q: 'Hvorfor står der ingen kursmål eller køb og salg?', a: '<p>Fordi analyserne er undervisning. Hver case viser, hvordan man læser et chart og et regnskab – med historiske forløb som eksempler – men siger ikke, hvad du skal gøre. Den beslutning er din.</p>' }
+      : { q: 'Hvad betyder kursmål og stop i analyserne?', a: '<p>Det er forfatterens egne, generelle vurderinger på udgivelsestidspunktet – markeret som prognoser med forudsætninger. De er ikke tilpasset dig og er ikke en instruks.</p>' },
+    { q: 'Kan jeg få personlig rådgivning?', a: '<p>Nej. Spørgetimer og grupper handler om metoder og begreber – ikke om, hvad du selv bør købe eller sælge. Har du brug for personlig rådgivning, så kontakt en autoriseret rådgiver, fx i din bank.</p>' },
     { q: 'Hvem hæfter, hvis jeg taber penge?', a: '<p>Det gør du selv. Du træffer dine egne beslutninger, og sitet fratager sig ansvaret for analyserne. Invester aldrig penge, du ikke har råd til at tabe.</p>' },
   ] },
   { title: 'Medlemskab', items: [
-    { q: 'Kan jeg opsige når som helst?', a: '<p>Ja. Plus og Premium har ingen binding og kan opsiges fra måned til måned.</p>' },
-    { q: 'Hvad er forskellen på Plus og Premium?', a: '<p>Plus giver dig alle analyser og adgang til porteføljen. Premium giver derudover en-til-en vejledning, de lukkede grupper og ubegrænset brug af AI-assistenten.</p>' },
-    { q: 'Jeg er helt ny. Hvor starter jeg?', a: '<p>Start med <strong>Introduktion</strong>. Den giver dig fundamentet, før du kaster dig over de løbende analyser.</p>' },
+    { q: 'Kan jeg opsige når som helst?', a: '<p>Ja. Plus og Premium har ingen binding og kan opsiges fra måned til måned. Læs mere i <a href="/handelsbetingelser/">handelsbetingelserne</a>.</p>' },
+    { q: 'Hvad er forskellen på Plus og Premium?', a: '<p>Plus giver dig hele arkivet og nye cases. Premium giver derudover spørgetimer om metoderne, de lukkede grupper og ubegrænset brug af AI-assistenten.</p>' },
+    { q: 'Jeg er helt ny. Hvor starter jeg?', a: '<p>Start med <strong>Introduktion</strong>. Den giver dig fundamentet, før du kaster dig over de løbende cases.</p>' },
   ] },
   { title: 'Indhold og data', items: [
-    { q: 'Hvilke markeder dækkes?', a: '<p>Primært danske storaktier og udvalgte amerikanske og europæiske aktier.</p>' },
+    { q: 'Hvilke markeder dækkes?', a: `<p>${s.forside_marked === 'dk' ? 'Primært danske storaktier og udvalgte amerikanske og europæiske aktier.' : 'Primært amerikanske og danske storaktier – og udvalgte europæiske aktier.'}</p>` },
     { q: 'Hvor kommer kurserne fra?', a: '<p>Kurserne hentes fra Yahoo Finance via sitets egen server. De opdateres løbende, men kan være forsinkede op til 15 minutter.</p>' },
-    { q: 'Ejer du selv de aktier, du skriver om?', a: '<p>Ofte. Det står altid i den enkelte analyse, og porteføljen vises åbent.</p>' },
+    s.portefolje_type === 'model'
+      ? { q: 'Ejer du selv de aktier, du skriver om?', a: `<p>Det står altid i den enkelte case.${s.vis_portefolje ? ' Porteføljen på siden er en modelportefølje med tænkte handler, så den viser ikke, hvad jeg selv ejer.' : ''}</p>` }
+      : { q: 'Ejer du selv de aktier, du skriver om?', a: `<p>Ofte. Det står altid i den enkelte analyse${s.vis_portefolje ? `, og porteføljen vises åbent${s.portefolje_forsinkelse ? ` med ${s.portefolje_forsinkelse} dages forsinkelse` : ''}` : ''}.</p>` },
+    ...(s.portefolje_type === 'model' && s.vis_portefolje ? [{ q: 'Er porteføljen rigtig?', a: `<p>Nej. Det er en modelportefølje: handlerne er tænkte og ikke foretaget med rigtige penge. Hver handel registreres med datoen og kursen den dag, den lægges ind, og der rettes ikke i den bagefter. Den viser, hvordan metoden ville have klaret sig – uden kurtage, skat og udbytte.${s.portefolje_forsinkelse ? ` Nye handler vises med ${s.portefolje_forsinkelse} dages forsinkelse.` : ''}</p>` }] : []),
     { q: 'Kan AI-assistenten tage fejl?', a: '<p>Ja. Sprogmodeller kan tage fejl eller bruge forældede tal. Brug assistenten til at lære begreberne, og tjek vigtige oplysninger i årsrapporter og selskabsmeddelelser.</p>' },
   ] },
-];
+  ];
+}
 
 function faqPage(site) {
   const s = site.settings;
@@ -148,7 +171,7 @@ function faqPage(site) {
 ${C.pageHead({ title: 'Spørgsmål og svar', intro: html`Klare svar på det, jeg oftest bliver spurgt om.${s.email ? html` Mangler du et svar, så skriv til <a class="textlink" href="mailto:${s.email}">${s.email}</a>.` : ''}` })}
 <section class="band band--white band--flush">
   <div class="wrap faqpage">
-    ${FAQ_GROUPS.map((g) => html`<section class="faqgroup"><h2>${g.title}</h2>${S.faqList(g.items)}</section>`)}
+    ${faqGroups(site).map((g) => html`<section class="faqgroup"><h2>${g.title}</h2>${S.faqList(g.items)}</section>`)}
   </div>
 </section>
 <section class="band band--paper band--tight"><div class="wrap">${C.disclaimerPanel(site)}</div></section>`;
@@ -168,22 +191,25 @@ ${C.pageHead({ title: 'Vigtigt at vide', intro: 'Læs dette, før du bliver medl
       <p>Der er altid en risiko forbundet med investering. Derfor bør du <strong>ikke handle med penge, som du ikke har råd til at tabe.</strong></p>
       <p>Brug analyserne og oplysningerne som en slags undervisningsmateriale, men <strong>foretag altid dine egne beslutninger og analyser</strong>, inden du handler.</p>
       <p>Historiske afkast er ikke en garanti for fremtidige afkast. <strong>${n} fratager sig alt ansvar for analyserne.</strong></p>
-      <p>Du er velkommen til at kontakte ${n}, hvis du har spørgsmål vedrørende handel med aktier${s.email ? html` – skriv til <a class="textlink" href="mailto:${s.email}">${s.email}</a>` : ''}.</p>
+      <p>Du er velkommen til at kontakte ${n} med spørgsmål til siden og metoderne${s.email ? html` – skriv til <a class="textlink" href="mailto:${s.email}">${s.email}</a>` : ''}. ${n} giver ikke personlig rådgivning om dine investeringer.</p>
     </div>
     <div class="legal__formal prose">
       <h2>Den formelle ansvarsfraskrivelse</h2>
       <h3>Indholdets karakter</h3>
-      <p>${n} er en privat udgivet research-, analyse- og undervisningsplatform. Indholdet udgør ikke finansiel, skattemæssig eller juridisk rådgivning og må ikke opfattes som en personlig anbefaling om at købe, sælge eller beholde finansielle instrumenter.</p>
-      <h3>Ingen autorisation</h3>
-      <p>${n} og udgiveren er ikke autoriseret som værdipapirhandler, investeringsrådgiver eller fondsmægler efter lov om finansiel virksomhed og er ikke under Finanstilsynets tilsyn. Indholdet er udtryk for udgiverens egen vurdering, baseret på offentligt tilgængelige kilder.</p>
+      <p>${n} er en privat udgivet undervisningsplatform. Indholdet er generel information og undervisning, der henvender sig til alle på samme måde. Det udgør ikke finansiel, skattemæssig eller juridisk rådgivning, tager ikke højde for din økonomi, dine mål eller din risikovillighed og må ikke opfattes som en personlig anbefaling om at købe, sælge eller beholde finansielle instrumenter.</p>
+      ${site.edu ? html`<p>Analyserne er undervisningscases. De viser, hvordan metoderne bruges på rigtige aktier – ofte med historiske forløb som eksempler – men indeholder ingen kursmål, stop eller opfordringer til at handle.</p>` : ''}
+      <h3>Ingen tilladelse fra Finanstilsynet</h3>
+      <p>${n} og udgiveren er ikke en finansiel virksomhed med tilladelse fra Finanstilsynet og yder ikke investeringsservice som personlig investeringsrådgivning, porteføljepleje eller formidling af handler. Indholdet er udtryk for udgiverens egen vurdering, baseret på offentligt tilgængelige kilder.</p>
       <h3>Investeringsrisiko</h3>
       <p>Al investering i aktier og andre finansielle instrumenter indebærer risiko for tab, herunder tab af hele det investerede beløb. Tidligere afkast er ikke en pålidelig indikator for fremtidige resultater.</p>
       <h3>Dit eget ansvar</h3>
       <p>Du bærer selv det fulde ansvar for dine investeringsbeslutninger og bør altid søge rådgivning hos en autoriseret rådgiver, der kender dine personlige forhold.</p>
       <h3>Interessekonflikter</h3>
-      <p>Udgiveren kan eje aktier i de selskaber, der omtales. Det oplyses i den enkelte analyse, og porteføljen vises åbent. ${n} modtager ikke betaling fra børsnoterede selskaber for omtale.</p>
+      <p>Udgiveren kan eje aktier i de selskaber, der omtales. Det oplyses i den enkelte analyse${s.vis_portefolje ? (site.model ? '. Porteføljen på siden er en modelportefølje med tænkte handler og viser ikke udgiverens egne investeringer' : ', og porteføljen vises åbent') : ''}. ${n} modtager ikke betaling fra børsnoterede selskaber for omtale.</p>
       <h3>Kursdata og AI-assistent</h3>
       <p>Kurser vises kun til information og kan være forsinkede eller fejlbehæftede. AI-assistenten giver undervisende svar, kan tage fejl og giver aldrig personlig rådgivning eller konkrete anbefalinger.</p>
+      <h3>Medlemskab og persondata</h3>
+      <p>Læs også <a href="/handelsbetingelser/">handelsbetingelserne</a> og <a href="/privatliv/">privatlivspolitikken</a>.</p>
       <h3>Lovvalg</h3>
       <p>Ansvarsfraskrivelsen er underlagt dansk ret.</p>
     </div>

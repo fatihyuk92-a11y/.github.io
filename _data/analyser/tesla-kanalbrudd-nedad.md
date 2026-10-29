@@ -1,5 +1,5 @@
 ---
-titel: "Kanalbrudd nedad — stop ramt"
+titel: "Trendbrud på ugegrafen – sådan læser man bruddet"
 slug: "tesla-kanalbrudd-nedad"
 aktie_navn: "Tesla"
 symbol: "TSLA"
@@ -8,20 +8,17 @@ valuta: "USD"
 dato: "2026-05-12"
 status: "udgivet"
 demo: true
-setup_type: "Bearish"
+setup_type: "Neutral"
 analyse_type: ["Teknisk"]
 sektor: "Teknologi"
 marked: "internationalt"
 tier: "free"
-lede: "Aktien brød den nederste trendlinie i ugentlig timeframe i sidste uge. Volumen bekræfter. Vi gennemgår de tre næste support-niveauer og hvad der skal til for at vende setup'et."
+lede: "Tesla brød den nederste linje i sin stigende trendkanal på ugegrafen – på høj volumen. Casen viser, hvordan man læser et trendbrud: dagsgraf mod ugegraf, volumen, falske brud, og hvorfor gammel støtte kan blive til modstand."
 tid: "16:05"
-forudsaetninger: "Bruddet under den ugentlige trendkanal holder på lukkekurs, og volumen forbliver over 20-dages gennemsnittet. Kursmålet er næste støtteniveau på ugegrafen."
 kilder: ["Kursdata fra Nasdaq", "Egne tekniske analyser"]
 forelagt: false
 niveauer:
   kurs: 218
-  maal: 178
-  stop: 235
 fakta:
   market_cap: "$695 mia"
   pe: "68,2"
@@ -31,20 +28,39 @@ position:
   ejer: false
   tekst: "Udgiveren har ingen position i Tesla på publikationstidspunktet."
 ---
-## Bruddet er bekræftet
+## Hvad er en trendkanal?
 
-Tesla har handlet i en stigende kanal siden bunden i april 2025. Onsdag i sidste uge brød aktien den nederste trendlinie på dagligt timeframe — og fredagen lukkede under linien på ugentligt. Det er **strukturel bekræftelse**, ikke bare en intraday-spike.
+En trendkanal er to parallelle linjer, der rammer kursens bunde og toppe ind. I en stigende kanal laver kursen højere bunde og højere toppe, og den nederste linje fungerer som støtte, så længe kanalen holder.
 
-## Volumen bekræfter
+Tesla havde handlet i en stigende kanal siden bunden i april 2025. Onsdag i ugen før casen brød aktien den nederste linje på dagsgrafen, og fredag lukkede den også under linjen på ugegrafen.
 
-Det vigtigste teknisk-tegn ved et trendbrud er volumen på selve bruddet vs. de forudgående uger. Tesla's volumen på bruddugen var **43% over 20-ugers gennemsnit**. Det er ikke ren stop-jagt — det er institutionel distribution.
+## Dagsgraf eller ugegraf?
 
-## Hvad nu?
+Et brud på dagsgrafen kan være støj – et enkelt udsving, der er væk igen dagen efter. Derfor skelner metoden mellem et brud *inde i dagen* og et brud på *lukkekurs*, og den lægger mest vægt på ugens lukkekurs. Jo længere tidshorisont et brud sker på, jo mere betyder det.
 
-1. **Hvis du var long** — stop på 195 er ramt. Tag tabet og dokumenter det. Hvis du ikke havde stop, så vurder positionen objektivt.
-2. **Hvis du overvejer short** — vent på en retest af bruddet (~228-235 området). Det giver bedre risk/reward.
-3. **Hvis du står udenfor** — der kommer flere muligheder. Tab på 195 åbner for 178, derefter den gamle support ved 165.
+## Hvorfor volumen er vigtig
 
-## Hvad annullerer setup'et?
+Det vigtigste tegn ved et trendbrud er volumen på selve bruddet sammenlignet med ugerne før. I bruddugen var volumen **43 % over gennemsnittet for de foregående 20 uger**.
 
-Ugentlig lukning over 235 vil signalere et "fail break" — at bruddet var falsk. Det sker i ca. 1 ud af 4 brud, så det skal man være opmærksom på. Indtil det sker, er den tekniske bias bearish.
+Høj volumen på et brud tyder på, at mange markedsdeltagere har handlet på det – ikke kun nogle få ordrer. Et brud på lav volumen er et svagere signal og bliver oftere til et falsk brud.
+
+> Et brud er en hypotese, indtil kursen har bekræftet det.
+
+## Gammel støtte, ny modstand
+
+Når en kurs bryder ned gennem et niveau, der tidligere har holdt som støtte, vender kursen ofte senere tilbage og tester niveauet nedefra. Teknikere kalder det, at *støtte bliver til modstand*. Om testen holder, ved man først bagefter. Begrebet er et redskab til at forstå grafen – ikke en forudsigelse.
+
+## Falske brud
+
+Ikke alle brud holder. Når kursen kort efter et brud lukker tilbage inde i kanalen, kaldes det et falsk brud. Derfor er et brud noget, der skal bekræftes – ikke en konklusion i sig selv.
+
+En god vane er at skrive ned, *før* man kender udfaldet, hvad der skal til, for at ens læsning af grafen er forkert. Så er det sværere at bortforklare bagefter.
+
+## Hvad casen lærer
+
+- **Brug lukkekurser.** Et brud på ugens lukkekurs vejer tungere end et udsving inde i dagen.
+- **Tjek volumen.** Et brud på høj volumen har bredere opbakning end et brud på lav volumen.
+- **Regn med falske brud.** Et brud er en hypotese, indtil kursen har bekræftet det.
+- **Risiko er personlig.** Hvor meget en enkelt aktie bør fylde, og hvor stort et tab man kan bære, afhænger af ens egen økonomi. Det kan en case ikke svare på.
+
+Hvad der skete efter bruddet, kan du selv følge på grafen øverst på siden.

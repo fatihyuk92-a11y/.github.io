@@ -20,6 +20,13 @@ const DEFAULT_SETTINGS = {
   email: '',
   firmanavn: '',
   cvr: '',
+  adresse: '',
+  // 'undervisning': cases uden kursmål, stop og køb/salg (anbefalet). 'anbefalinger': analyser med kursmål og fulde oplysninger.
+  indholdstype: 'undervisning',
+  vis_portefolje: true,
+  portefolje_forsinkelse: 30, // dage, før nye handler vises på siden
+  // 'egen': dine rigtige handler. 'model': tænkte handler (modelportefølje) – siden skriver det tydeligt overalt.
+  portefolje_type: 'egen',
   hero_titel: 'Forstå markedet, før du handler.',
   hero_tekst: '',
   premium_visning: 'teaser',
@@ -62,6 +69,12 @@ function loadSettings() {
   for (const key of ['ticker', 'indeks', 'danske_aktier', 'us_aktier', 'valuta_raavarer']) s[key] = cleanSymbolList(s[key]);
   s.premium_visning = s.premium_visning === 'fuld' ? 'fuld' : 'teaser';
   s.forside_marked = s.forside_marked === 'dk' ? 'dk' : 'us';
+  s.indholdstype = s.indholdstype === 'anbefalinger' ? 'anbefalinger' : 'undervisning';
+  s.vis_portefolje = s.vis_portefolje !== false;
+  s.portefolje_type = s.portefolje_type === 'model' ? 'model' : 'egen';
+  const delay = parseInt(s.portefolje_forsinkelse, 10);
+  s.portefolje_forsinkelse = Number.isFinite(delay) ? Math.min(365, Math.max(0, delay)) : 30;
+  for (const k of ['forfatter', 'forfatter_titel', 'email', 'firmanavn', 'cvr', 'adresse']) s[k] = String(s[k] || '').trim();
   s.priser = (Array.isArray(s.priser) ? s.priser : []).map((t, i) => ({
     id: String(t.id || ['intro', 'plus', 'premium'][i] || `tier${i}`),
     navn: String(t.navn || ''),
@@ -152,6 +165,7 @@ function normalizeAnalysis(data, body, file) {
     forudsaetninger: String(data.forudsaetninger || '').trim(),
     forelagt: data.forelagt === true,
     laesetid: readTime(body),
+    md: body, // rå tekst – bruges af sprogtjekket i bygningen
     html,
     headings,
     teaserHtml: teaser.html,
@@ -233,4 +247,28 @@ function loadPortfolio() {
   return out;
 }
 
-module.exports = { loadSettings, loadAnalyses, loadPortfolio, warnings, ROOT, DATA };
+/**
+ * Porteføljen vises med forsinkelse: en position, der er købt eller solgt inden for de seneste `days` dage,
+ * kommer først med på siden, når handlen er ældre end det. Så er porteføljen gennemsigtighed – ikke handelssignaler.
+ */
+function delayPortfolio(positions, days, now = new Date()) {
+  if (!days) return { visible: positions, pending: [] };
+  const cutoff = new Date(now.getTime() - days * 86400e3).toISOString().slice(0, 10);
+  const recent = (d) => Boolean(d) && d > cutoff;
+  const shownFrom = (d) => new Date(Date.parse(d + 'T12:00:00Z') + days * 86400e3).toISOString().slice(0, 10);
+  const visible = [], pending = [];
+  for (const p of positions) {
+    const sold = p.status === 'lukket' && p.salgsdato;
+    if (recent(p.koebsdato)) {
+      // Nyt køb: positionen kommer først med, når købet (og et evt. salg) er ældre end forsinkelsen.
+      pending.push({ ...p, visibleFrom: shownFrom(sold ? p.salgsdato : p.koebsdato) });
+    } else if (sold && recent(p.salgsdato)) {
+      // Nyt salg: positionen vises fortsat som åben, indtil salget må vises – ellers ville den forsvinde og afsløre handlen.
+      visible.push({ ...p, status: 'aaben', salgsdato: '', salgskurs: null });
+      pending.push({ ...p, visibleFrom: shownFrom(p.salgsdato) });
+    } else visible.push(p);
+  }
+  return { visible, pending };
+}
+
+module.exports = { loadSettings, loadAnalyses, loadPortfolio, delayPortfolio, warnings, warn, ROOT, DATA };

@@ -15,7 +15,7 @@ function head(site, { title, description, path, ogType = 'website', noindex = fa
   const s = site.settings;
   const fullTitle = title ? `${title} – ${s.sitenavn}` : `${s.sitenavn} – aktieanalyser, portefølje og markedsdata`;
   const canonical = site.siteUrl ? site.siteUrl + path : '';
-  const desc = description || 'Tekniske og fundamentale analyser af amerikanske og danske aktier, en åben portefølje og live markedsdata. Til undervisning – ikke rådgivning.';
+  const desc = description || `Tekniske og fundamentale analyser af amerikanske og danske aktier, ${site.model ? 'en modelportefølje' : 'en åben portefølje'} og live markedsdata. Til undervisning – ikke rådgivning.`;
   const v = site.buildId;
   return html`<!doctype html>
 <html lang="da">
@@ -32,7 +32,7 @@ ${noindex ? raw('<meta name="robots" content="noindex">') : ''}
 <meta property="og:description" content="${desc}">
 <meta property="og:locale" content="da_DK">
 <meta property="og:site_name" content="${s.sitenavn}">
-${site.siteUrl ? html`<meta property="og:url" content="${canonical}"><meta property="og:image" content="${site.siteUrl}/assets/img/og.png">` : ''}
+${site.siteUrl ? html`<meta property="og:url" content="${canonical}"><meta property="og:image" content="${site.siteUrl}/assets/img/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="${s.sitenavn} – undervisning i aktier og investering">` : ''}
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
@@ -58,7 +58,7 @@ function header(site, active) {
     <a class="brand" href="/" aria-label="${site.settings.sitenavn} – forside">${logoMark(30)}<span>${site.settings.sitenavn}</span></a>
     <nav class="mainnav" id="mainnav" aria-label="Hovedmenu">
       <ul>
-        ${NAV.map((n) => html`<li><a href="${n.href}"${n.key === active ? raw(' aria-current="page"') : ''}>${n.label}</a></li>`)}
+        ${NAV.filter((n) => n.key !== 'portefolje' || site.settings.vis_portefolje).map((n) => html`<li><a href="${n.href}"${n.key === active ? raw(' aria-current="page"') : ''}>${n.label}</a></li>`)}
       </ul>
       <a class="btn btn--primary mainnav__cta" href="/medlemskab/">Bliv medlem</a>
     </nav>
@@ -98,14 +98,14 @@ function footer(site) {
     <div class="site-footer__grid">
       <div class="site-footer__brand">
         <a class="brand brand--light" href="/">${logoMark(30)}<span>${s.sitenavn}</span></a>
-        <p>Analyser, portefølje og markedsdata for dig, der vil forstå aktiemarkedet og træffe dine egne beslutninger.</p>
+        <p>Undervisning, cases og markedsdata for dig, der vil forstå aktiemarkedet og træffe dine egne beslutninger.</p>
         ${s.email ? html`<a class="site-footer__mail" href="mailto:${s.email}">${icon('mail', { size: 18 })}${s.email}</a>` : ''}
       </div>
       <nav aria-label="Indhold">
         <h2>Indhold</h2>
         <ul>
           <li><a href="/analyser/">Analyser</a></li>
-          <li><a href="/portefolje/">Portefølje</a></li>
+          ${s.vis_portefolje ? html`<li><a href="/portefolje/">Portefølje</a></li>` : ''}
           <li><a href="/markedet/">Markedet</a></li>
           <li><a href="/ai-assistent/">AI-assistent</a></li>
         </ul>
@@ -123,13 +123,15 @@ function footer(site) {
         <h2>Juridisk</h2>
         <ul>
           <li><a href="/vigtigt/">Ansvarsfraskrivelse</a></li>
+          <li><a href="/handelsbetingelser/">Handelsbetingelser</a></li>
+          <li><a href="/privatliv/">Privatlivspolitik</a></li>
           <li><a href="/admin/" rel="nofollow">Admin</a></li>
         </ul>
       </nav>
     </div>
     <div class="site-footer__disclaimer">
       <h2>Ansvarsfraskrivelse</h2>
-      <p>Alle analyser og oplysninger på ${s.sitenavn} er baseret på den viden, jeg har opnået på aktiemarkedet igennem de sidste mange år. ${s.sitenavn} udbyder ikke rådgivning eller anbefalinger, og alle analyser er udelukkende til undervisning. Der er altid en risiko forbundet med investering, derfor bør du ikke handle med penge, som du ikke har råd til at tabe. Brug analyserne og oplysningerne som en slags undervisningsmateriale, men foretag altid dine egne beslutninger og analyser, inden du handler. Historiske afkast er ikke en garanti for fremtidige afkast. ${s.sitenavn} fratager sig alt ansvar for analyserne. Du er velkommen til at kontakte ${s.sitenavn}, hvis du har spørgsmål vedrørende handel med aktier.</p>
+      <p>Alle analyser og oplysninger på ${s.sitenavn} er baseret på den viden, jeg har opnået på aktiemarkedet igennem de sidste mange år. ${s.sitenavn} udbyder ikke rådgivning eller anbefalinger, og alle analyser er udelukkende til undervisning. Der er altid en risiko forbundet med investering, derfor bør du ikke handle med penge, som du ikke har råd til at tabe. Brug analyserne og oplysningerne som en slags undervisningsmateriale, men foretag altid dine egne beslutninger og analyser, inden du handler. Historiske afkast er ikke en garanti for fremtidige afkast. ${s.sitenavn} fratager sig alt ansvar for analyserne. Indholdet er generelt og tager ikke højde for din økonomi, dine mål eller din risikovillighed. Du er velkommen til at kontakte ${s.sitenavn} med spørgsmål til siden og metoderne – men vi giver ikke personlig rådgivning om dine investeringer.</p>
     </div>
     <div class="site-footer__base">
       <p>© ${year} ${s.sitenavn}${company ? html`<span class="site-footer__company">${company}</span>` : ''}</p>

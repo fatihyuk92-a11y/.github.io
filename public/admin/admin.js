@@ -1,6 +1,7 @@
 // Aktiekompas admin – opret og redigér analyser, investeringer og indstillinger.
 // Alt gemmes som filer i GitHub-repoet; Vercel bygger siden automatisk efter hver gemning.
 import { GitHub, GitHubError, blobToBase64 } from './gh.js';
+import './lint.js';
 import { marked } from '/vendor/marked.esm.js';
 import * as yaml from '/vendor/js-yaml.esm.min.js';
 
@@ -793,6 +794,30 @@ function clearStaged(...texts) {
 }
 
 /* =====================================================================
+   Sprogtjek: formuleringer, der kan læses som en anbefaling eller kursvurdering
+   (bruges i undervisningstilstand, hvor siden ikke må anbefale noget)
+   ===================================================================== */
+const { checkLanguage } = globalThis.AkLint; // reglerne ligger i lint.js, som byggeren også bruger
+function lintBox() {
+  const el = h('div', { class: 'lint', 'aria-live': 'polite' });
+  return {
+    el,
+    update(hits) {
+      if (!hits.length) {
+        el.className = 'lint lint--ok';
+        el.replaceChildren(icon('check', 16), h('span', { text: 'Sprogtjek: ingen formuleringer, der lyder som køb/salg eller kursprognoser.' }));
+        return;
+      }
+      el.className = 'lint lint--warn';
+      el.replaceChildren(icon('alert', 16), h('div', null,
+        h('strong', { text: `Sprogtjek: ${hits.length} ${hits.length === 1 ? 'formulering kan' : 'formuleringer kan'} læses som en anbefaling eller kursvurdering` }),
+        h('ul', null, hits.slice(0, 6).map((x) => h('li', { title: x.context }, h('b', { text: `«${x.phrase}»` }), ` ${x.why}${x.count > 1 ? ` (${x.count} gange)` : ''}`))),
+        h('p', { text: 'Beskriv hvad der er sket, og forklar metoden – fx "kursen har testet 400 kr. tre gange" i stedet for "køb ved 400 kr.".' })));
+    },
+  };
+}
+
+/* =====================================================================
    Overblik
    ===================================================================== */
 async function viewOverview() {
@@ -811,6 +836,8 @@ async function viewOverview() {
   const first = (S.user.name || S.user.login || '').split(' ')[0];
   const sd = st.data || {};
   const missingSender = !String(sd.forfatter || '').trim() || sd.forfatter === (sd.sitenavn || 'Aktiekompas') || !String(sd.forfatter_titel || '').trim();
+  const edu = sd.indholdstype !== 'anbefalinger';
+  const missingCompany = ['firmanavn', 'cvr', 'adresse', 'email'].filter((k) => !String(sd[k] || '').trim());
 
   const check = (ok, label, okText, badText) => h('li', { class: ok ? 'is-ok' : 'is-bad' }, icon(ok ? 'check' : 'alert', 18), h('div', null, h('strong', { text: label }), h('span', { text: ok ? okText : badText })));
 
@@ -820,8 +847,11 @@ async function viewOverview() {
       h('a', { class: 'btn btn--primary', href: '#/analyser/ny' }, icon('plus', 18), 'Ny analyse')),
     demoCount ? h('div', { class: 'note note--warn' }, icon('info', 18), h('p', null, `Siden indeholder ${demoCount} ${demoCount === 1 ? 'eksempel' : 'eksempler'} fra opsætningen (mærket "Eksempel"). Erstat eller slet ${demoCount === 1 ? 'det' : 'dem'}, før du lancerer, så besøgende kun ser dine rigtige analyser og positioner.`)) : null,
     missingSender ? h('div', { class: 'note note--warn' }, icon('alert', 18), h('div', { class: 'note__body' },
-      h('p', null, 'Skriv dit navn og din titel som afsender. Finanstilsynet kræver, at det fremgår, hvem der står bag analyser med kursmål – en ansvarsfraskrivelse er ikke nok i sig selv.'),
+      h('p', null, edu ? 'Skriv dit navn og din titel som afsender. Det vises på alle cases og giver læserne tillid til, hvem der står bag.' : 'Skriv dit navn og din titel som afsender. Finanstilsynet kræver, at det fremgår, hvem der står bag analyser med kursmål – en ansvarsfraskrivelse er ikke nok i sig selv.'),
       h('a', { class: 'btn btn--secondary btn--sm', href: '#/indstillinger/generelt' }, 'Udfyld afsender'))) : null,
+    missingCompany.length ? h('div', { class: 'note note--warn' }, icon('alert', 18), h('div', { class: 'note__body' },
+      h('p', null, `Udfyld ${missingCompany.map((k) => ({ firmanavn: 'firmanavn', cvr: 'CVR-nummer', adresse: 'adresse', email: 'e-mail' }[k])).join(', ')} under Indstillinger. Oplysningerne bruges i handelsbetingelserne og privatlivspolitikken, som skal være på plads, før du tager betaling.`),
+      h('a', { class: 'btn btn--secondary btn--sm', href: '#/indstillinger/generelt' }, 'Udfyld oplysninger'))) : null,
     S.publicRepo ? h('div', { class: 'note' }, icon('lock', 18), h('p', null, 'Dit GitHub-repo er offentligt, så alle kan læse premium-tekster og skjulte positioner på GitHub. Gør repoet privat under Settings → General → Danger Zone på GitHub. Siden og admin virker uændret.')) : null,
     h('div', { class: 'stats' },
       h('a', { class: 'stat', href: '#/analyser' }, h('span', { class: 'stat__label', text: 'Analyser' }), h('span', { class: 'stat__value', text: String(pub.length) }), h('span', { class: 'stat__sub', text: drafts ? `${drafts} kladde${drafts === 1 ? '' : 'r'}` : 'Ingen kladder' })),
@@ -833,7 +863,12 @@ async function viewOverview() {
         health ? h('ul', { class: 'checks' },
           check(health.quotes && health.quotes.ok, 'Kursdata', 'Live kurser hentes fra Yahoo Finance.', 'Kurserne kan ikke hentes lige nu. Siden viser "–" og bruger TradingView til grafer, indtil det virker igen.'),
           check(health.ai, 'AI-assistent', `Slået til (model: ${health.aiModel}).`, 'Mangler ANTHROPIC_API_KEY i Vercel. Indtil den er sat, viser chatten en besked om, at den ikke er slået til.'),
-          check(health.login, 'Admin-login', 'GitHub-login er sat op.', 'Mangler OAuth-nøgler i Vercel.')) : h('p', { class: 'muted', text: 'Systemtjekket kunne ikke hentes.' }),
+          check(health.login, 'Admin-login', 'GitHub-login er sat op.', 'Mangler OAuth-nøgler i Vercel.'),
+          check(edu, 'Indholdstype', 'Undervisning: ingen kursmål, stop eller køb og salg på siden.', 'Analyser med kursmål: husk reglerne for investeringsanbefalinger i hver analyse.'),
+          sd.vis_portefolje !== false ? check(true, 'Portefølje', isModel(sd) ? 'Modelportefølje: tænkte handler, tydeligt mærket på siden.' : 'Dine egne handler. Er de ikke rigtige, så vælg Modelportefølje under Indstillinger.', '') : null,
+          sd.vis_portefolje !== false && Number(sd.portefolje_forsinkelse ?? 30) > 0
+            ? check(health.rebuild, 'Daglig opdatering', 'Siden bygges igen hver nat, så handler kommer med, når forsinkelsen er udløbet.', 'Ikke sat op. Handler vises først, når forsinkelsen er udløbet og du har gemt noget i admin. Se README, afsnit 2.')
+            : null) : h('p', { class: 'muted', text: 'Systemtjekket kunne ikke hentes.' }),
         build && build.warnings && build.warnings.length ? h('div', { class: 'warns' }, h('h3', { text: 'Advarsler fra seneste bygning' }), h('ul', null, build.warnings.map((w) => h('li', { text: w })))) : null),
       h('section', { class: 'card' },
         h('h2', { text: 'Seneste ændringer' }),
@@ -908,9 +943,28 @@ Regnskab, værdiansættelse og hvad der driver aktien.
 
 Hvad betyder det samlet set, og hvilke niveauer holder du øje med?`;
 
+// Skabelon til undervisningscases: forløb og metode – ingen handelsinstrukser
+const TEMPLATE_EDU = `## Hvad viser chartet?
+
+Beskriv forløbet: trend, støtte og modstand, og hvordan kursen har reageret på dem. Brug gerne historiske eksempler.
+
+## Den fundamentale case
+
+Regnskab, værdiansættelse og hvad der driver forretningen – og hvordan man selv kan regne på det.
+
+## Hvad kan gå galt?
+
+- Risiko 1
+- Risiko 2
+
+## Hvad kan du lære af casen?
+
+De vigtigste pointer om metoden, som du kan bruge på andre aktier.`;
+
 async function viewAnalysisEditor(action, arg) {
   const paint = painter();
-  const list = await loadAnalyses();
+  const [list, settingsFile] = await Promise.all([loadAnalyses(), loadJson('settings', {})]);
+  const edu = (settingsFile.data || {}).indholdstype !== 'anbefalinger'; // undervisningstilstand
   const src = arg ? list.find((a) => a.file === arg) : null;
   if ((action === 'rediger' || action === 'kopi') && !src) throw new Error('Analysen blev ikke fundet. Den kan være slettet.');
   const isNew = action !== 'rediger';
@@ -919,7 +973,7 @@ async function viewAnalysisEditor(action, arg) {
     titel: base.titel || '', aktie_navn: base.aktie_navn || '', symbol: base.symbol || (base.fakta && base.fakta.ticker) || '',
     valuta: base.valuta || '', dato: action === 'kopi' || !base.dato ? today() : isoDate(base.dato) || today(),
     status: action === 'rediger' ? (base.status === 'kladde' ? 'kladde' : 'udgivet') : 'kladde',
-    setup_type: base.setup_type || 'Bullish', analyse_type: Array.isArray(base.analyse_type) ? base.analyse_type : base.analyse_type ? [base.analyse_type] : ['Teknisk'],
+    setup_type: base.setup_type || (edu ? 'Neutral' : 'Bullish'), analyse_type: Array.isArray(base.analyse_type) ? base.analyse_type : base.analyse_type ? [base.analyse_type] : ['Teknisk'],
     sektor: base.sektor || '', marked: base.marked || '', tier: base.tier || 'free', lede: base.lede || '',
     kurs: parseNumber(base.niveauer && base.niveauer.kurs), maal: parseNumber(base.niveauer && base.niveauer.maal), stop: parseNumber(base.niveauer && base.niveauer.stop),
     fakta: { market_cap: '', pe: '', ev_ebitda: '', udbytte: '', h52: '', l52: '', ...(base.fakta || {}) },
@@ -930,7 +984,7 @@ async function viewAnalysisEditor(action, arg) {
     forudsaetninger: base.forudsaetninger || '',
     kilder: (Array.isArray(base.kilder) ? base.kilder : String(base.kilder || '').split(/\r?\n/)).map((x) => String(x || '').trim()).filter(Boolean).join('\n'),
     forelagt: base.forelagt === true,
-    body: src ? src.body : TEMPLATE,
+    body: src ? src.body : edu ? TEMPLATE_EDU : TEMPLATE,
   };
   delete m.fakta.ticker; delete m.fakta.sektor;
   let slugTouched = action === 'rediger';
@@ -1022,7 +1076,10 @@ async function viewAnalysisEditor(action, arg) {
   if (!m.marked) m.marked = isDanish(m.symbol) ? 'dansk' : m.symbol ? 'internationalt' : 'dansk';
   const markedSeg = segmented([['dansk', 'Danske aktier'], ['internationalt', 'Internationale'], ['makro', 'Makro']], m.marked, (v) => { m.marked = v; markDirty(); });
 
-  const editor = mdEditor({ value: m.body, onInput: (v) => { m.body = v; markDirty(); }, uploadName: () => m.slug || m.aktie_navn });
+  const lint = lintBox();
+  const runLint = debounce(() => lint.update(checkLanguage(m.titel, m.lede, m.body)), 350);
+  const editor = mdEditor({ value: m.body, onInput: (v) => { m.body = v; markDirty(); if (edu) runLint(); }, uploadName: () => m.slug || m.aktie_navn });
+  if (edu) { titelIn.addEventListener('input', runLint); ledeIn.addEventListener('input', runLint); }
 
   const faktaFields = [['market_cap', 'Markedsværdi', 'Fx 158 mia. DKK'], ['pe', 'P/E', 'Fx 22,4'], ['ev_ebitda', 'EV/EBITDA', 'Fx 11,8'], ['udbytte', 'Udbytte', 'Fx 2,1 %'], ['h52', '52 ugers høj', 'Fx 178,60'], ['l52', '52 ugers lav', 'Fx 119,40']];
 
@@ -1047,7 +1104,14 @@ async function viewAnalysisEditor(action, arg) {
     if (!m.slug) autoSlug();
     if (!/^[a-z0-9-]+$/.test(m.slug)) errors.push('Adressen må kun indeholde små bogstaver, tal og bindestreger.');
     if (others.some((a) => slugOf(a) === m.slug)) errors.push(`Adressen /analyser/${m.slug}/ bruges allerede af en anden analyse. Vælg en anden under "Adresse".`);
-    if (status === 'udgivet' && (m.maal != null || m.stop != null) && !m.forudsaetninger.trim()) {
+    if (status === 'udgivet' && edu) {
+      const hits = checkLanguage(m.titel, m.lede, m.body);
+      if (hits.length) {
+        const go2 = await dialog({ title: 'Teksten lyder som en anbefaling', text: `Sprogtjekket fandt ${hits.map((x) => `«${x.phrase}»`).slice(0, 5).join(', ')}. I undervisningstilstand skal casen forklare, hvad der er sket, og hvordan metoden bruges – ikke hvad læseren skal gøre. Vil du udgive alligevel?`, confirm: 'Udgiv alligevel', cancel: 'Ret teksten' });
+        if (!go2) { editor.ta.focus(); return; }
+      }
+    }
+    if (status === 'udgivet' && !edu && (m.maal != null || m.stop != null) && !m.forudsaetninger.trim()) {
       const go2 = await dialog({ title: 'Mangler forudsætninger', text: 'Analysen har et kursmål eller stop, men ingen forudsætninger. Finanstilsynet kræver, at kursmål markeres som prognoser med de væsentlige forudsætninger. Vil du udgive alligevel?', confirm: 'Udgiv alligevel', cancel: 'Skriv forudsætninger' });
       if (!go2) { assIn.focus(); return; }
     }
@@ -1064,7 +1128,7 @@ async function viewAnalysisEditor(action, arg) {
       symbol: m.symbol || undefined, valuta: m.valuta || undefined, dato: m.dato || today(), status: m.status,
       setup_type: m.setup_type, analyse_type: m.analyse_type.length ? m.analyse_type : ['Teknisk'],
       sektor: m.sektor || undefined, marked: m.marked, tier: m.tier, lede: m.lede.trim(),
-      niveauer: { kurs: m.kurs, maal: m.maal, stop: m.stop },
+      niveauer: Object.fromEntries(Object.entries({ kurs: m.kurs, maal: m.maal, stop: m.stop }).filter(([, v]) => v != null)),
       position: { ejer: m.ejer, tekst: m.posTekst.trim() },
       tid: normTime(m.tid) || undefined,
       forudsaetninger: m.forudsaetninger.trim() || undefined,
@@ -1072,6 +1136,7 @@ async function viewAnalysisEditor(action, arg) {
       forelagt: m.forelagt,
     });
     if (!data.kilder.length) delete data.kilder;
+    if (!Object.keys(data.niveauer).length) delete data.niveauer;
     const fakta = Object.fromEntries(Object.entries(m.fakta).filter(([, v]) => String(v || '').trim()));
     if (Object.keys(fakta).length) data.fakta = fakta;
     if (m.demo) data.demo = true; else delete data.demo;
@@ -1143,30 +1208,35 @@ async function viewAnalysisEditor(action, arg) {
           h('div', { class: 'f' }, h('span', { class: 'flabel', text: 'Adgang' }), segmented([['free', 'Gratis'], ['premium', 'Premium']], m.tier, (v) => { m.tier = v; markDirty(); }), h('p', { class: 'f__hint', text: 'Premium viser intro og første afsnit – resten er låst.' })))),
       section('Kategori', null,
         h('div', { class: 'grid3' },
-          h('div', { class: 'f' }, h('span', { class: 'flabel', text: 'Setup' }), segmented([['Bullish', 'Bullish'], ['Bearish', 'Bearish'], ['Neutral', 'Neutral']], m.setup_type, (v) => { m.setup_type = v; updateLevels(); markDirty(); })),
-          h('div', { class: 'f f--span2' }, h('span', { class: 'flabel', text: 'Type' }), checkChips([['Teknisk', 'Teknisk'], ['Fundamental', 'Fundamental'], ['Makro', 'Makro']], m.analyse_type, (v) => { m.analyse_type = v; markDirty(); })))),
-      section('Niveauer', 'Bruges i analysens nøgletal, på grafen og til at vise kursudviklingen siden udgivelsen.',
-        h('div', { class: 'grid3' },
-          h('div', { class: 'f' }, h('label', { for: kursIn.id = `kurs${++uid}` }, 'Kurs ved analysen'), kursIn, h('div', { class: 'f__row' }, priceNow, useLive)),
-          field('Kursmål', maalIn),
-          field('Stop', stopIn)),
-        levelInfo,
-        field('Forudsætninger for kursmål og stop', assIn, { wide: true, hint: 'Vises under niveauerne. Finanstilsynet kræver, at kursmål markeres som prognoser med de væsentlige forudsætninger.' })),
-      section('Selve analysen', 'Skriv med overskrifter (H2) – de bliver til indholdsfortegnelsen ved siden af analysen.', editor.el),
+          edu ? null : h('div', { class: 'f' }, h('span', { class: 'flabel', text: 'Setup' }), segmented([['Bullish', 'Bullish'], ['Bearish', 'Bearish'], ['Neutral', 'Neutral']], m.setup_type, (v) => { m.setup_type = v; updateLevels(); markDirty(); })),
+          h('div', { class: edu ? 'f f--wide' : 'f f--span2' }, h('span', { class: 'flabel', text: 'Type' }), checkChips([['Teknisk', 'Teknisk'], ['Fundamental', 'Fundamental'], ['Makro', 'Makro']], m.analyse_type, (v) => { m.analyse_type = v; markDirty(); })))),
+      edu
+        ? section('Kurs', 'Kursen på udgivelsestidspunktet vises på grafen. I undervisningstilstand vises ingen kursmål, stop eller kursudvikling siden udgivelsen.',
+          h('div', { class: 'grid3' },
+            h('div', { class: 'f' }, h('label', { for: kursIn.id = `kurs${++uid}` }, 'Kurs ved udgivelse'), kursIn, h('div', { class: 'f__row' }, priceNow, useLive))))
+        : section('Niveauer', 'Bruges i analysens nøgletal, på grafen og til at vise kursudviklingen siden udgivelsen.',
+          h('div', { class: 'grid3' },
+            h('div', { class: 'f' }, h('label', { for: kursIn.id = `kurs${++uid}` }, 'Kurs ved analysen'), kursIn, h('div', { class: 'f__row' }, priceNow, useLive)),
+            field('Kursmål', maalIn),
+            field('Stop', stopIn)),
+          levelInfo,
+          field('Forudsætninger for kursmål og stop', assIn, { wide: true, hint: 'Vises under niveauerne. Finanstilsynet kræver, at kursmål markeres som prognoser med de væsentlige forudsætninger.' })),
+      section(edu ? 'Selve casen' : 'Selve analysen', edu ? 'Forklar metoden på aktien: hvad viser chartet og regnskabet, og hvad skal der til, før casen ikke holder? Brug gerne historiske forløb. Overskrifter (H2) bliver til indholdsfortegnelsen.' : 'Skriv med overskrifter (H2) – de bliver til indholdsfortegnelsen ved siden af analysen.', editor.el, edu ? lint.el : null),
       h('details', { class: 'fsec fsec--fold' },
         h('summary', null, h('h2', { text: 'Nøgletal' }), h('span', { class: 'muted', text: 'Valgfrit – vises i faktaboksen' })),
         h('div', { class: 'fsec__body grid3' }, faktaFields.map(([k, label, ph]) => field(label, input(m.fakta[k], { placeholder: ph, oninput: change((v) => { m.fakta[k] = v; }) }))))),
-      section('Oplysninger til læseren', 'Vises i bunden af analysen. Finanstilsynet kræver bl.a., at du oplyser egne positioner og andre interesser, dine kilder, og om selskabet har set analysen.',
+      section('Oplysninger til læseren', edu ? 'Vises i bunden af casen. Oplys altid, om du selv ejer aktien, og hvor dine tal kommer fra – det giver tillid.' : 'Vises i bunden af analysen. Finanstilsynet kræver bl.a., at du oplyser egne positioner og andre interesser, dine kilder, og om selskabet har set analysen.',
         toggle('Jeg ejer aktien', m.ejer, (v) => { m.ejer = v; autoPos(); markDirty(); if (posTouched) toast('Husk at rette teksten om din position, så den passer.', 'info'); }),
         field('Position og andre interesser', posIn, { wide: true, hint: 'Skriv også, hvis du har andre forbindelser til selskabet, der kan påvirke din objektivitet.' }),
         field('Kilder', kildeIn, { wide: true, hint: 'Én kilde pr. linje. Links bliver klikbare.' }),
-        toggle('Analysen er vist til selskabet før udgivelsen', m.forelagt, (v) => { m.forelagt = v; markDirty(); }, 'Normalt nej. Slå kun til, hvis selskabet har set analysen, før den blev udgivet.')),
+        edu ? null : toggle('Analysen er vist til selskabet før udgivelsen', m.forelagt, (v) => { m.forelagt = v; markDirty(); }, 'Normalt nej. Slå kun til, hvis selskabet har set analysen, før den blev udgivet.')),
       action === 'rediger' && m.demo ? section('Eksempel', null, toggle('Vis som eksempelanalyse', m.demo, (v) => { m.demo = v; markDirty(); }, 'Slå fra, når analysen er din egen. Så forsvinder Eksempel-mærkaten.')) : null,
       h('details', { class: 'fsec fsec--fold' },
         h('summary', null, h('h2', { text: 'Adresse' }), h('span', { class: 'muted' }, urlHint)),
         h('div', { class: 'fsec__body' }, field('Adresse (slug)', slugIn, { hint: action === 'rediger' ? 'Hvis du ændrer adressen på en udgivet analyse, virker gamle links ikke længere.' : 'Udfyldes automatisk ud fra aktie og titel.', wide: true })))),
     h('div', { class: 'savebar' }, delBtn, h('span', { class: 'savebar__sp' }), h('a', { class: 'btn btn--ghost', href: '#/analyser' }, 'Annullér'), draftBtn, saveBtn));
   updateLevels();
+  if (edu) lint.update(checkLanguage(m.titel, m.lede, m.body));
   if (m.symbol) refreshLive();
   if (isNew && !slugTouched) autoSlug();
   if (!posTouched) autoPos();
@@ -1175,10 +1245,39 @@ async function viewAnalysisEditor(action, arg) {
 /* =====================================================================
    Portefølje
    ===================================================================== */
+/** Dato, hvor en position kommer med på siden (forsinkelse efter seneste køb eller salg) – eller null, hvis den allerede vises. */
+function pendingUntil(p, delay) {
+  if (!delay) return null;
+  const last = p.status === 'lukket' && p.salgsdato ? isoDate(p.salgsdato) : isoDate(p.koebsdato);
+  if (!last) return null;
+  const from = new Date(Date.parse(last + 'T12:00:00Z') + delay * 86400e3).toISOString().slice(0, 10);
+  return from > today() ? from : null;
+}
+
+// Modelportefølje: tænkte handler skal registreres med dagens dato og den aktuelle kurs – ellers beviser resultatet ingenting.
+const isModel = (sd) => (sd || {}).portefolje_type === 'model';
+function priceGap(price, live) { return price > 0 && live > 0 ? Math.abs(price - live) / live : 0; }
+async function confirmModelTrade(issues) {
+  if (!issues.length) return true;
+  return !!(await dialog({
+    title: 'Tjek handlen i modelporteføljen',
+    text: `${issues.join(' ')} I en modelportefølje skal handler registreres med dagens dato og den aktuelle kurs, og der må ikke rettes i dem bagefter – ellers kan resultatet ikke bruges som bevis og kan virke vildledende. Gem alligevel?`,
+    confirm: 'Gem alligevel', cancel: 'Ret handlen',
+  }));
+}
+
+// Et salg af en ældre position: positionen står stadig som åben på siden, indtil salget må vises.
+function soldLater(p, delay) {
+  const bought = isoDate(p.koebsdato);
+  return p.status === 'lukket' && !!bought && new Date(Date.parse(bought + 'T12:00:00Z') + delay * 86400e3).toISOString().slice(0, 10) <= today();
+}
+
 async function viewPortfolio() {
   const paint = painter();
-  const pf = await loadJson('portfolio', { positioner: [] });
+  const [pf, st] = await Promise.all([loadJson('portfolio', { positioner: [] }), loadJson('settings', {})]);
   const all = pf.data.positioner || (pf.data.positioner = []);
+  const sdata = st.data || {};
+  const delay = sdata.portefolje_forsinkelse == null ? 30 : Number(sdata.portefolje_forsinkelse) || 0;
   let tab = 'aaben';
   const head = h('thead');
   const body = h('tbody');
@@ -1199,7 +1298,7 @@ async function viewPortfolio() {
         h('td', { class: 'nowrap c-now', 'data-label': p.status === 'lukket' ? 'Solgt' : 'Kurs nu' }, p.status === 'lukket' ? h('span', null, h('span', { text: fmtNum(exit) }), h('span', { class: 'sub', text: fmtDate(p.salgsdato) })) : h('span', { text: q ? fmtNum(q.price) : '–' })),
         h('td', { class: `nowrap ret c-ret ${ret > 0 ? 'up' : ret < 0 ? 'down' : ''}`, text: fmtPct(ret) }),
         h('td', { class: 'nowrap hide-sm', text: p.vaegt ? `${NF1.format(parseNumber(p.vaegt))} %` : '–' }),
-        h('td', { class: 'c-vis' }, p.synlighed === 'medlemmer' ? h('span', { class: 'badge badge--premium' }, icon('lock', 13), 'Medlemmer') : h('span', { class: 'muted vis-default', text: 'Offentlig' }), p.demo ? h('span', { class: 'badge badge--demo', text: 'Eksempel' }) : null),
+        h('td', { class: 'c-vis' }, p.synlighed === 'medlemmer' ? h('span', { class: 'badge badge--premium' }, icon('lock', 13), 'Medlemmer') : h('span', { class: 'muted vis-default', text: 'Offentlig' }), p.demo ? h('span', { class: 'badge badge--demo', text: 'Eksempel' }) : null, pendingUntil(p, delay) ? h('span', { class: 'badge badge--draft', title: soldLater(p, delay) ? `Vises som åben på siden, indtil salget vises ${fmtDate(pendingUntil(p, delay))} (${delay} dages forsinkelse)` : `Vises på siden fra ${fmtDate(pendingUntil(p, delay))} (${delay} dages forsinkelse)`, text: `${soldLater(p, delay) ? 'Salget vises' : 'Vises'} fra ${fmtDate(pendingUntil(p, delay))}` }) : null),
         h('td', { class: 'actions' },
           h('a', { class: 'iconbtn', href: `#/portefolje/rediger/${encodeURIComponent(p.id)}`, title: 'Redigér', 'aria-label': 'Redigér' }, icon('edit')),
           p.status !== 'lukket' ? h('button', { class: 'btn btn--ghost btn--sm', onclick: () => closePosition(p, q) }, 'Luk position') : null));
@@ -1228,6 +1327,12 @@ async function viewPortfolio() {
     if (!r) return;
     const kurs = parseNumber(r.kurs);
     if (kurs == null) return toast('Skriv en salgskurs.', 'error');
+    if (isModel(sdata)) {
+      const issues = [];
+      if (r.dato && r.dato !== today()) issues.push(`Salgsdatoen er ${fmtDate(r.dato)}, ikke i dag.`);
+      if (q && priceGap(kurs, q.price) > 0.02) issues.push(`Salgskursen afviger ${NF1.format(priceGap(kurs, q.price) * 100)} % fra den aktuelle kurs (${fmtNum(q.price)}).`);
+      if (!(await confirmModelTrade(issues))) return;
+    }
     const next = JSON.parse(JSON.stringify(pf.data));
     const t = next.positioner.find((x) => x.id === p.id);
     Object.assign(t, { status: 'lukket', salgsdato: r.dato || today(), salgskurs: kurs, kommentar: r.kommentar.trim() });
@@ -1240,7 +1345,7 @@ async function viewPortfolio() {
 
   const tabs = segmented([['aaben', 'Åbne'], ['lukket', 'Lukkede']], tab, (v) => { tab = v; render(); });
   paint(
-    pageHead('Portefølje', 'Investeringer, der vises på siden under Portefølje. Afkastet beregnes automatisk med de aktuelle kurser.', h('a', { class: 'btn btn--primary', href: '#/portefolje/ny' }, icon('plus', 18), 'Ny investering')),
+    pageHead(isModel(sdata) ? 'Modelportefølje' : 'Portefølje', sdata.vis_portefolje === false ? 'Porteføljesiden er slået fra under Indstillinger → Generelt, så positionerne vises ikke på siden.' : isModel(sdata) ? `Tænkte handler, der vises på siden som modelportefølje. Registrér hver handel med dagens dato og kurs, og ret ikke i dem bagefter.${delay ? ` Nye handler vises først efter ${delay} dage.` : ''}` : `Investeringer, der vises på siden under Portefølje.${delay ? ` Nye køb og salg vises først efter ${delay} dage.` : ''} Afkastet beregnes automatisk med de aktuelle kurser.`, h('a', { class: 'btn btn--primary', href: '#/portefolje/ny' }, icon('plus', 18), 'Ny investering')),
     h('div', { class: 'toolbar' }, tabs, summary),
     h('div', { class: 'card card--flush' }, h('div', { class: 'tablewrap' }, h('table', { class: 'tbl tbl--stack tbl--pf' },
       head, body)), empty));
@@ -1251,7 +1356,8 @@ async function viewPortfolio() {
 
 async function viewPositionEditor(action, arg) {
   const paint = painter();
-  const [pf, analyses] = await Promise.all([loadJson('portfolio', { positioner: [] }), loadAnalyses()]);
+  const [pf, analyses, st] = await Promise.all([loadJson('portfolio', { positioner: [] }), loadAnalyses(), loadJson('settings', {})]);
+  const model = isModel(st.data);
   const all = pf.data.positioner || [];
   const src = action === 'rediger' ? all.find((p) => p.id === arg) : null;
   if (action === 'rediger' && !src) throw new Error('Positionen blev ikke fundet.');
@@ -1296,7 +1402,7 @@ async function viewPositionEditor(action, arg) {
     h('option', { value: '', text: 'Ingen' }),
     analyses.map((a) => { const slug = slugOf(a); return h('option', { value: slug, selected: slug === m.analyse, text: `${a.data.aktie_navn || ''}: ${a.data.titel || slug}${a.data.status === 'kladde' ? ' (kladde)' : ''}` }); }));
 
-  const saveBtn = h('button', { type: 'button', class: 'btn btn--primary' }, 'Gem investering');
+  const saveBtn = h('button', { type: 'button', class: 'btn btn--primary' }, model ? 'Gem handel' : 'Gem investering');
   const delBtn = src ? h('button', { type: 'button', class: 'btn btn--danger-ghost', 'aria-label': 'Slet positionen' }, icon('trash', 16), h('span', { class: 'btn__label', text: 'Slet' })) : null;
 
   saveBtn.addEventListener('click', async () => {
@@ -1306,6 +1412,22 @@ async function viewPositionEditor(action, arg) {
     if (m.koebskurs == null || m.koebskurs <= 0) errors.push('Skriv købskursen.');
     if (m.status === 'lukket' && (m.salgskurs == null || m.salgskurs <= 0)) errors.push('Skriv salgskursen for den lukkede position.');
     if (errors.length) return errors.forEach((e) => toast(e, 'error', 6000));
+    if (model) {
+      const issues = [];
+      if (!src) {
+        if ((m.koebsdato || today()) !== today()) issues.push(`Købsdatoen er ${fmtDate(m.koebsdato)}, ikke i dag.`);
+        if (livePrice && priceGap(m.koebskurs, livePrice) > 0.02) issues.push(`Købskursen afviger ${NF1.format(priceGap(m.koebskurs, livePrice) * 100)} % fra den aktuelle kurs (${fmtNum(livePrice)}).`);
+      } else {
+        const changed = (a, b) => String(a ?? '') !== String(b ?? '');
+        if (changed(isoDate(src.koebsdato), m.koebsdato) || changed(parseNumber(src.koebskurs), m.koebskurs)) issues.push('Du ændrer købsdato eller købskurs på en handel, der allerede er registreret.');
+        if (src.status === 'lukket' && m.status === 'lukket' && (changed(isoDate(src.salgsdato), m.salgsdato) || changed(parseNumber(src.salgskurs), m.salgskurs))) issues.push('Du ændrer salgsdato eller salgskurs på en handel, der allerede er registreret.');
+        if (src.status !== 'lukket' && m.status === 'lukket') {
+          if ((m.salgsdato || today()) !== today()) issues.push(`Salgsdatoen er ${fmtDate(m.salgsdato)}, ikke i dag.`);
+          if (livePrice && priceGap(m.salgskurs, livePrice) > 0.02) issues.push(`Salgskursen afviger ${NF1.format(priceGap(m.salgskurs, livePrice) * 100)} % fra den aktuelle kurs (${fmtNum(livePrice)}).`);
+        }
+      }
+      if (!(await confirmModelTrade(issues))) return;
+    }
     const next = JSON.parse(JSON.stringify(pf.data));
     next.positioner = next.positioner || [];
     const rec = {
@@ -1323,7 +1445,7 @@ async function viewPositionEditor(action, arg) {
     try {
       await saveJson('portfolio', next, `${src ? 'Opdateret' : 'Ny'} investering: ${rec.navn}`);
       S.dirty = false;
-      toast(src ? 'Ændringerne er gemt. Siden opdateres om ca. 1 minut.' : `${rec.navn} er tilføjet porteføljen. Siden opdateres om ca. 1 minut.`, 'success', 6000);
+      toast(src ? 'Ændringerne er gemt. Siden opdateres om ca. 1 minut.' : `${rec.navn} er tilføjet ${model ? 'modelporteføljen' : 'porteføljen'}. Siden opdateres om ca. 1 minut.`, 'success', 6000);
       go('#/portefolje');
     } catch (err) { toast(`Kunne ikke gemme: ${err.message}`, 'error', 8000); } finally { saveBtn.disabled = false; }
   });
@@ -1342,7 +1464,7 @@ async function viewPositionEditor(action, arg) {
 
   paint(
     h('a', { class: 'back', href: '#/portefolje' }, '← Porteføljen'),
-    pageHead(src ? `Redigér ${src.navn}` : 'Ny investering', src ? null : 'Søg efter aktien – navn, valuta, sektor og dagens kurs udfyldes automatisk.'),
+    pageHead(src ? `Redigér ${src.navn}` : model ? 'Ny handel i modelporteføljen' : 'Ny investering', src ? null : model ? 'Søg efter aktien – dagens dato og kurs udfyldes automatisk. Handlen er tænkt og vises som en del af modelporteføljen.' : 'Søg efter aktien – navn, valuta, sektor og dagens kurs udfyldes automatisk.'),
     h('div', { class: 'form' },
       section('Aktie', null,
         field('Find aktie', picker, { wide: true }),
@@ -1378,15 +1500,22 @@ async function viewSettings(tab) {
 
   if (tab === 'generelt') {
     body.append(
-      section('Afsender', 'Hvem står bag analyserne. Vises på hver analyse og i bunden af siden.',
+      section('Indhold og regler', 'Bestemmer, hvordan analyserne vises – og dermed om siden giver anbefalinger.', contentTypeControl(d)),
+      section('Afsender', 'Hvem står bag siden. Vises på analyserne, i bunden af siden og i handelsbetingelserne.',
         h('div', { class: 'grid3' },
           field('Dit navn', input(d.forfatter || '', { oninput: ch('forfatter'), placeholder: 'Fx Fatih Yüksel' }), { hint: 'Vises som afsender på alle analyser.' }),
-          field('Din titel', input(d.forfatter_titel || '', { oninput: ch('forfatter_titel'), placeholder: 'Fx Privatinvestor og skribent' }), { hint: 'Finanstilsynet kræver navn og stillingsbetegnelse på den, der står bag en analyse.' }),
+          field('Din titel', input(d.forfatter_titel || '', { oninput: ch('forfatter_titel'), placeholder: 'Fx Privatinvestor og skribent' }), { hint: 'Vises sammen med dit navn. Kræves, hvis du udgiver analyser med kursmål.' }),
           field('E-mail', input(d.email || '', { type: 'email', oninput: ch('email'), placeholder: 'hej@ditdomæne.dk' }))),
         h('div', { class: 'grid3' },
           field('Sidens navn', input(d.sitenavn || 'Aktiekompas', { oninput: ch('sitenavn') })),
-          field('Firmanavn', input(d.firmanavn || '', { oninput: ch('firmanavn') }), { hint: 'Vises i bunden, hvis udfyldt.' }),
-          field('CVR-nummer', input(d.cvr || '', { inputmode: 'numeric', oninput: ch('cvr') })))),
+          field('Firmanavn', input(d.firmanavn || '', { oninput: ch('firmanavn') }), { hint: 'Fx dit ApS eller din enkeltmandsvirksomhed.' }),
+          field('CVR-nummer', input(d.cvr || '', { inputmode: 'numeric', oninput: ch('cvr') }))),
+        field('Adresse', input(d.adresse || '', { oninput: ch('adresse'), placeholder: 'Fx Eksempelvej 1, 2750 Ballerup' }), { wide: true, hint: 'Skal stå i handelsbetingelserne, når du sælger medlemskaber.' })),
+      section('Portefølje', 'Porteføljen vist åbent på siden.',
+        portfolioTypeControl(d),
+        toggle('Vis porteføljen på siden', d.vis_portefolje !== false, (v) => { d.vis_portefolje = v; markDirty(); }, 'Slå fra for at fjerne porteføljesiden helt.'),
+        h('div', { class: 'grid3' },
+          field('Forsinkelse (dage)', input(d.portefolje_forsinkelse == null ? '30' : String(d.portefolje_forsinkelse), { inputmode: 'numeric', oninput: (e) => { const n = parseInt(e.target.value, 10); d.portefolje_forsinkelse = Number.isFinite(n) ? Math.min(365, Math.max(0, n)) : 0; markDirty(); } }), { hint: 'Nye køb og salg vises først, når de er så gamle. Så er porteføljen gennemsigtighed – ikke handelssignaler. Anbefalet: 30.' }))),
       section('Forsiden', null,
         field('Overskrift', input(d.hero_titel || '', { oninput: ch('hero_titel') }), { wide: true }),
         field('Tekst under overskriften', textarea(d.hero_tekst || '', { rows: 3, oninput: ch('hero_tekst') }), { wide: true }),
@@ -1476,6 +1605,40 @@ async function viewSettings(tab) {
     h('nav', { class: 'tabs', 'aria-label': 'Indstillinger' }, SETTINGS_TABS.map(([k, l]) => h('a', { href: `#/indstillinger/${k}`, 'aria-current': k === tab ? 'page' : null, text: l }))),
     body,
     h('div', { class: 'savebar' }, h('span', { class: 'savebar__sp' }), saveBtn));
+}
+
+/** Valg af indholdstype med forklaring af, hvad valget betyder. */
+function portfolioTypeControl(d) {
+  const info = h('div', { class: 'note' });
+  const describe = (v) => {
+    info.className = v === 'model' ? 'note note--warn' : 'note';
+    info.replaceChildren(icon(v === 'model' ? 'alert' : 'info', 18), h('p', null, v === 'model'
+      ? 'Handlerne er tænkte og ikke foretaget med rigtige penge. Siden skriver det tydeligt alle steder, porteføljen nævnes. Registrér hver handel med dagens dato og kurs, og ret ikke i dem bagefter – admin advarer dig, hvis du gør.'
+      : 'Porteføljen viser dine rigtige handler. Skriv kun handler, du faktisk har foretaget – ellers skal du vælge Modelportefølje.'));
+  };
+  const value = d.portefolje_type === 'model' ? 'model' : 'egen';
+  describe(value);
+  return h('div', { class: 'f f--wide' }, h('span', { class: 'flabel', text: 'Porteføljetype' }),
+    segmented([['egen', 'Mine egne handler'], ['model', 'Modelportefølje (tænkte handler)']], value, (v) => { d.portefolje_type = v; describe(v); markDirty(); }),
+    info);
+}
+
+function contentTypeControl(d) {
+  const info = h('div', { class: 'note' });
+  const describe = (v) => {
+    if (v === 'anbefalinger') {
+      info.className = 'note note--warn';
+      info.replaceChildren(icon('alert', 18), h('p', null, 'Analyserne viser kursmål, stop og setup-retning. Så er de investeringsanbefalinger, og du skal følge reglerne for dem: navn og titel, tidspunkt, forudsætninger, kilder og egne positioner. En ansvarsfraskrivelse fritager dig ikke.'));
+    } else {
+      info.className = 'note';
+      info.replaceChildren(icon('info', 18), h('p', null, 'Analyserne vises som undervisningscases uden kursmål, stop, setup-retning og kursudvikling siden udgivelsen. Admin advarer, hvis teksten lyder som køb eller salg. Sådan holder du siden på undervisningssiden af reglerne for investeringsanbefalinger.'));
+    }
+  };
+  const value = d.indholdstype === 'anbefalinger' ? 'anbefalinger' : 'undervisning';
+  describe(value);
+  return h('div', { class: 'f f--wide' },
+    segmented([['undervisning', 'Undervisning (anbefalet)'], ['anbefalinger', 'Analyser med kursmål']], value, (v) => { d.indholdstype = v; describe(v); markDirty(); }),
+    info);
 }
 
 function setPath(obj, path, value) {

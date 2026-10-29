@@ -32,8 +32,8 @@ function analysisUrl(a) {
 }
 
 /** Analysekort til arkivet og forsiden. */
-function analysisCard(a, { compact = false } = {}) {
-  const k = a.niveauer.kurs;
+function analysisCard(a, { compact = false, edu = false } = {}) {
+  const k = edu ? null : a.niveauer.kurs; // i undervisningstilstand vises ingen kursudvikling siden udgivelsen
   return html`<article class="acard${compact ? ' acard--compact' : ''}" data-cat="${a.types.map((t) => t.toLowerCase()).join(' ')}" data-market="${a.marked}" data-setup="${a.setup.toLowerCase()}" data-date="${a.dato}" data-title="${(a.aktie + ' ' + a.titel + ' ' + a.symbol).toLowerCase()}"${a.symbol ? html` data-quote="${a.symbol}"` : ''}>
   <a class="acard__link" href="${analysisUrl(a)}"><span class="sr-only">Læs analysen: ${a.aktie}: ${a.titel}</span></a>
   <div class="acard__top">
@@ -42,7 +42,7 @@ function analysisCard(a, { compact = false } = {}) {
   </div>
   <h3 class="acard__title"><span>${a.aktie}:</span> ${a.titel}</h3>
   ${compact ? '' : html`<p class="acard__lede">${a.lede}</p>`}
-  <div class="acard__chips">${setupChip(a.setup)}${typeChips(a.types)}${a.tier === 'premium' ? premiumChip() : ''}${a.demo ? demoChip() : ''}</div>
+  <div class="acard__chips">${edu ? '' : setupChip(a.setup)}${typeChips(a.types)}${a.tier === 'premium' ? premiumChip() : ''}${a.demo ? demoChip() : ''}</div>
   <footer class="acard__foot">
     <span class="acard__date">${fmtDate(a.dato, { short: true })}<span aria-hidden="true">, </span>${a.laesetid} min.</span>
     ${k != null && a.symbol ? html`<span class="acard__since" title="Kursudvikling siden analysen blev udgivet">Siden analysen <span class="delta" data-f="since" data-base="${k}">&nbsp;</span></span>` : ''}
@@ -67,7 +67,7 @@ function disclaimerPanel(site, { compact = false } = {}) {
   <div class="notice__icon">${icon('shield', { size: 22 })}</div>
   <div>
     <h2 class="notice__title">Vigtigt at vide</h2>
-    <p>${n} udbyder ikke rådgivning eller anbefalinger. Alle analyser er udelukkende til undervisning, og du bør aldrig handle med penge, du ikke har råd til at tabe. Historiske afkast er ikke en garanti for fremtidige afkast.</p>
+    <p>${n} udbyder ikke rådgivning eller anbefalinger. Alle analyser er udelukkende til undervisning og tager ikke højde for din økonomi, dine mål eller din risikovillighed. Du bør aldrig handle med penge, du ikke har råd til at tabe, og historiske afkast er ikke en garanti for fremtidige afkast.</p>
     <a class="textlink" href="/vigtigt/">Læs hele ansvarsfraskrivelsen</a>
   </div>
 </aside>`;

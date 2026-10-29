@@ -1,5 +1,5 @@
 ---
-titel: "Når regnskabet underdriver pipelinen"
+titel: "Sum-of-the-parts – sådan regner man på en biotekpipeline"
 slug: "genmab-pipeline-undervurderes"
 aktie_navn: "Genmab"
 symbol: "GMAB.CO"
@@ -8,20 +8,17 @@ valuta: "DKK"
 dato: "2026-05-10"
 status: "udgivet"
 demo: true
-setup_type: "Bullish"
+setup_type: "Neutral"
 analyse_type: ["Fundamental"]
 sektor: "Sundhed"
 marked: "dansk"
 tier: "premium"
-lede: "Q1-tallene var en flad historie. Pipelinen er det ikke. Vi gennemgår de tre vigtigste fase-3 kandidater, royalty-strukturen, og hvorfor markedet stadig ser Genmab som en Darzalex-aktie — selv om det er en undervurdering af de næste fem år."
+lede: "Genmab er et godt eksempel på et selskab, hvor regnskabet kun fortæller en del af historien. Casen viser, hvordan man deler værdien op i royalties, godkendte produkter og pipeline – og hvorfor resultatet afhænger så meget af antagelserne."
 tid: "08:40"
-forudsaetninger: "Darzalex-royalties fortsætter til patentudløb, og mindst én af de tre fase 3-kandidater godkendes inden 2028. Værdien er beregnet med en sum-of-the-parts-model og 9 % diskonteringsrente."
 kilder: ["Genmab, årsrapport og kvartalsrapporter", "Clinicaltrials.gov", "Egne beregninger"]
 forelagt: false
 niveauer:
   kurs: 1190
-  maal: 1450
-  stop: 1050
 fakta:
   market_cap: "78 mia DKK"
   pe: "18,4"
@@ -30,45 +27,62 @@ fakta:
   l52: "1.040"
 position:
   ejer: true
-  tekst: "Udgiveren ejer aktier i Genmab på publikationstidspunktet (anskaffet i flere intervaller mellem 2023-2025 til gennemsnitspris omkring DKK 1.080)."
+  tekst: "Udgiveren ejer aktier i Genmab på publikationstidspunktet (anskaffet i flere omgange mellem 2023 og 2025 til en gennemsnitspris omkring DKK 1.080). Dette kan udgøre en interessekonflikt og skal indgå i din vurdering af casens objektivitet."
 ---
-## Markedets blindt punkt
+## Hvorfor regnskabet ikke er nok
 
-Genmab er stadig hovedsageligt prissat som en royalty-cashflow på Darzalex. Det er forståeligt — Darzalex har drevet væksten i fem år. Men markedet undervurderer to ting samtidig: **varigheden** af Darzalex-royalty efter LOE, og **værdien** af de tre nye fase-3 kandidater.
+Genmabs indtjening har i mange år været drevet af royalties fra Darzalex, et kræftmiddel, som Johnson & Johnson sælger. Royalties fra ét produkt er nemme at aflæse i regnskabet – men de siger ikke meget om, hvad der sker, når patentet udløber, eller hvad selskabets nye lægemidler kan blive værd.
 
-> Et regnskab fortæller dig fortiden. En pipeline fortæller dig fremtiden. Mr. Market handler nu primært fortiden.
+> Et regnskab fortæller dig fortiden. En pipeline handler om fremtiden – og den er usikker.
 
-## De tre der ændrer narrativet
+Derfor bruger mange en **sum-of-the-parts-model** til biotekselskaber: Man værdiansætter hver del for sig og lægger delene sammen.
 
-### 1. Epcoritamab — den bedst kendte
+## De tre kandidater i pipelinen
 
-Allerede godkendt i tredje linje DLBCL. Pivotal data i 2L follikulært lymfom forventes i Q3 2026. Hvis data er rene, åbner det et marked der er **2,5x** så stort som det nuværende. Peak sales-konsensus er $1,4 mia. Vores DCF antager $1,8 mia ved peak.
+### 1. Epcoritamab – allerede godkendt
 
-### 2. Acasunlimab — det undervurderede skud
+Godkendt i tredje behandlingslinje mod DLBCL, en type lymfekræft. Data fra et afgørende studie i anden linje mod follikulært lymfom var ventet i 3. kvartal 2026. En godkendelse dér ville åbne et marked, der er omkring 2,5 gange større end det nuværende.
 
-Bispecifikt antistof i fase-3 for NSCLC. Markedet giver det stort set ingen værdi, men fase-2 viser **respons-rater på 39%** i en patientgruppe hvor PD-L1 efter immunoterapi normalt giver 8-12%. Vi tildeler 35% sandsynlighed for succes.
+### 2. Acasunlimab – i fase 3
 
-### 3. Tisotumab vedotin — den støtte ingen ser
+Et bispecifikt antistof mod ikke-småcellet lungekræft. I fase 2 var responsraten 39 % i en patientgruppe, hvor standardbehandlingen typisk giver 8-12 %. Resultater fra fase 2 bliver ofte svagere i fase 3, og derfor regner man med en sandsynlighed for succes – ikke med det bedste udfald.
 
-Allerede på markedet til cervix-kræft. Ekspansion til endometriel og ovarial er undervejs. Mindre nyhedsstof, men solid royalty-bidrag der vokser.
+### 3. Tisotumab vedotin – på markedet
 
-## DCF — en pragmatisk opstilling
+Godkendt mod livmoderhalskræft og under afprøvning mod flere kræftformer. Mindre omtalt, men et eksempel på et produkt, der bidrager stabilt uden at fylde i overskrifterne.
 
-Vi bygger DCF som **summen af tre risk-justerede streams**: Darzalex-royalty, godkendte produkter, og fase-3 pipeline. Antagelser:
+## Sådan bygger man modellen
 
-- WACC: **9,5%** (biotek-tillæg)
-- Terminal growth: **2,0%**
-- Darzalex LOE 2030 (US) / 2031 (EU)
-- Epcoritamab peak: $1,8 mia (vs. $1,4 mia konsensus)
-- Acasunlimab: 35% PoS, $2,1 mia peak hvis succes
+Modellen består af tre risikojusterede dele: royalties fra Darzalex, de godkendte produkter og pipelinen. Hver del får sine egne antagelser. I eksemplet bruger vi:
 
-## Hvad kan gå galt?
+- **Diskonteringsrente (WACC):** 9,5 % – lidt højere end for et gennemsnitligt selskab, fordi biotek er mere risikabelt
+- **Vækst efter prognoseperioden:** 2,0 % om året
+- **Patentudløb for Darzalex:** 2030 i USA og 2031 i EU
+- **Sandsynlighed for succes for Acasunlimab:** 35 %
 
-1. **Epcoritamab 2L data skuffer** — det er det største enkelt-event-risiko. Aktien vil sandsynligvis falde 15-25% på dårlige data.
-2. **Acasunlimab fase-3 fejler** — markedet diskonterer det allerede delvist, så downside er mindre.
-3. **Biotek-multiple kompression** — hvis sektoren generelt de-rater.
-4. **Patent-udfordringer** — Darzalex har haft IPR-pres før.
+Hver kandidat i pipelinen indgår med sit forventede salg ganget med sandsynligheden for, at den bliver godkendt.
 
-## Det taktiske setup
+## Følsomhed: hvorfor antagelserne er alt
 
-Genmab handler aktuelt 14% under base case fair value, og 22% under bull case. Det er ikke en "back up the truck"-margin, men det er heller ikke fuldt værdiansat. Vi mener risk/reward er attraktiv på 12-18 måneders sigt — primært drevet af Epcoritamab 2L-data i Q3 2026.
+En DCF-model er kun så god som sine antagelser. Prøv selv at ændre dem:
+
+- **Diskonteringsrenten:** Et procentpoint højere rente sænker værdien af indtægter langt ude i fremtiden markant – og i biotek ligger meget af værdien netop langt ude.
+- **Sandsynligheden for succes:** Går Acasunlimab fra 35 % til 20 %, falder pipelinens bidrag tilsvarende.
+- **Topsalget:** Regn med både analytikernes konsensus (omkring 1,4 mia. dollar for Epcoritamab) og et højere skøn, og se, hvor meget resultatet flytter sig.
+
+Øvelsen er ikke at finde "den rigtige kurs". Den er at forstå, hvilke antagelser der ligger i markedsprisen, og hvilke begivenheder der kan ændre dem.
+
+## Hvad kan ændre billedet?
+
+1. **Studiedata** – data fra afgørende studier er binære begivenheder, der kan flytte en biotekaktie markant på én dag, i begge retninger.
+2. **Fase 3-resultater** – en del af pipelinens værdi forsvinder, hvis et studie ikke lever op til målet.
+3. **Sektorstemning** – biotekaktier bevæger sig ofte samlet med renten og investorernes risikovillighed.
+4. **Patenter** – Darzalex har tidligere været udfordret af patentsager.
+
+## Hvad casen lærer
+
+- **Del selskabet op.** Royalties, godkendte produkter og pipeline har vidt forskellig risiko.
+- **Regn med sandsynligheder.** En kandidat i pipelinen er ikke det bedste udfald værd, men det forventede.
+- **Test følsomheden.** Hvis små ændringer i antagelserne vender konklusionen, er konklusionen svag.
+
+Casen tager ikke stilling til aktiens pris eller til, om den passer i en portefølje. Det afhænger af dine egne antagelser, din økonomi og din risikovillighed.

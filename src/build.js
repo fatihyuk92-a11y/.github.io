@@ -2,7 +2,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { loadSettings, loadAnalyses, loadPortfolio, warnings, ROOT } = require('./lib/data');
+const { loadSettings, loadAnalyses, loadPortfolio, delayPortfolio, warnings, warn, ROOT } = require('./lib/data');
+const { checkLanguage } = require('./lib/lint');
 const { toString } = require('./lib/util');
 
 const DIST = path.join(ROOT, 'dist');
@@ -55,9 +56,45 @@ function main() {
   console.log('Bygger Aktiekompas …');
   const settings = loadSettings();
   const analyses = loadAnalyses();
-  const portfolio = loadPortfolio();
+  const allPositions = loadPortfolio();
+  // Nye handler vises først efter forsinkelsen (se delayPortfolio). Skjulte positioner kommer slet ikke med i HTML'en.
+  const { visible: portfolio, pending } = delayPortfolio(allPositions, settings.portefolje_forsinkelse);
   const buildId = crypto.createHash('sha1').update(String(Date.now()) + JSON.stringify(settings).length).digest('hex').slice(0, 8);
-  const site = { settings, analyses, portfolio, buildId, siteUrl: siteUrl() };
+  const site = {
+    settings, analyses, portfolio, buildId, siteUrl: siteUrl(),
+    edu: settings.indholdstype !== 'anbefalinger', // undervisningstilstand: ingen kursmål, stop eller køb/salg
+    portfolioPending: pending.length,
+    model: settings.portefolje_type === 'model', // modelportefølje: tænkte handler
+  };
+
+  // Sprogtjek i undervisningstilstand: udgivet indhold, der lyder som en anbefaling, vises som advarsel i admin (Overblik).
+  if (site.edu) {
+    const report = (where, hits) => {
+      if (!hits.length) return;
+      const words = hits.slice(0, 4).map((x) => `«${x.phrase}»`).join(', ');
+      warn(`Sprogtjek: ${where} indeholder ${words}, som kan læses som en anbefaling. Siden står i undervisningstilstand – beskriv metoden og det, der er sket, i stedet.`);
+    };
+    for (const a of analyses) report(`analysen "${a.titel}"`, checkLanguage(a.titel, a.lede, a.md));
+    for (const p of allPositions) if (p.kommentar) report(`kommentaren til ${p.navn || p.symbol} i porteføljen`, checkLanguage(p.kommentar));
+    report('forsidens tekst', checkLanguage(settings.hero_titel, settings.hero_tekst));
+    report('teksten på Om-siden', checkLanguage(settings.om_tekst));
+    report('beskrivelsen af medlemskaberne', checkLanguage(...settings.priser.flatMap((t) => [t.beskrivelse, t.note, ...(t.features || []).map((f) => f.tekst)])));
+  }
+
+  // Porteføljetypen: teksterne må ikke tale om "min egen portefølje", hvis porteføljen er en modelportefølje – og omvendt.
+  if (settings.vis_portefolje) {
+    const OWN = /(?<![\p{L}\p{N}])(?:min\s+egen\s+portefølje|min\s+portefølje|mine\s+egne\s+(?:køb|handler|investeringer|positioner))(?![\p{L}\p{N}])/iu;
+    const MODEL = /(?<![\p{L}\p{N}])(?:modelportefølje\p{L}*|papirportefølje\p{L}*|tænkte\s+handler)(?![\p{L}\p{N}])/iu;
+    const texts = [
+      ['forsidens tekst', [settings.hero_titel, settings.hero_tekst]],
+      ['teksten på Om-siden', [settings.om_tekst]],
+      ['beskrivelsen af medlemskaberne', settings.priser.flatMap((t) => [t.beskrivelse, t.note, ...(t.features || []).map((f) => f.tekst)])],
+    ];
+    for (const [where, list] of texts) {
+      const m = list.join(' \n ').match(site.model ? OWN : MODEL);
+      if (m) warn(`Porteføljen står som ${site.model ? 'modelportefølje' : 'dine egne handler'}, men ${where} skriver «${m[0]}». Ret teksten under Indstillinger, så den passer.`);
+    }
+  }
 
   rmrf(DIST);
   mkdirp(DIST);
@@ -79,9 +116,10 @@ function main() {
     ...require('./pages/home')(site),
     ...require('./pages/analyser')(site),
     ...require('./pages/analyse')(site),
-    ...require('./pages/portefolje')(site),
+    ...(settings.vis_portefolje ? require('./pages/portefolje')(site) : []),
     ...require('./pages/markedet')(site),
     ...require('./pages/content')(site),
+    ...require('./pages/legal')(site),
   ];
   for (const p of pages) {
     const rel = p.file || path.join(p.path.replace(/^\//, ''), 'index.html');
@@ -90,9 +128,9 @@ function main() {
 
   // Data til admin og klient (kun offentlige felter)
   write('data/analyser.json', JSON.stringify(analyses.map((a) => ({
-    slug: a.slug, titel: a.titel, aktie: a.aktie, symbol: a.symbol, dato: a.dato, tier: a.tier, setup: a.setup,
+    slug: a.slug, titel: a.titel, aktie: a.aktie, symbol: a.symbol, dato: a.dato, tier: a.tier, ...(site.edu ? {} : { setup: a.setup }),
   }))));
-  write('data/build.json', JSON.stringify({ buildId, built: new Date().toISOString(), analyser: analyses.length, positioner: portfolio.length, lwc: lwcVersion, warnings }));
+  write('data/build.json', JSON.stringify({ buildId, built: new Date().toISOString(), analyser: analyses.length, positioner: portfolio.length, ventende_positioner: pending.length, lwc: lwcVersion, warnings }));
 
   // Sitemap og robots
   const urls = pages.filter((p) => !p.file).map((p) => p.path);
@@ -116,7 +154,7 @@ function main() {
   const analysisJs = path.join(DIST, 'assets/js/analysis.js');
   if (fs.existsSync(analysisJs)) fs.writeFileSync(analysisJs, fs.readFileSync(analysisJs, 'utf8').replace('{{LWC_FILE}}', `/vendor/lightweight-charts-${lwcVersion}.js`));
 
-  console.log(`✓ ${pages.length} sider, ${analyses.length} analyser, ${portfolio.length} positioner på ${Date.now() - t0} ms`);
+  console.log(`✓ ${pages.length} sider, ${analyses.length} analyser, ${portfolio.length} positioner${pending.length ? ` (+${pending.length} vises senere)` : ''}, ${site.edu ? 'undervisningstilstand' : 'analyser med kursmål'} på ${Date.now() - t0} ms`);
   if (warnings.length) console.log(`  ${warnings.length} advarsel(er) – se ovenfor`);
 }
 

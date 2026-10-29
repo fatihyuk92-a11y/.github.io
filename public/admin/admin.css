@@ -578,3 +578,13 @@ input[type='date'].in { padding-right: 8px; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .spin { animation: spin 1.6s linear infinite !important; }
 }
+
+/* ---------- Sprogtjek i editoren ---------- */
+.lint { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r-m); font-size: 14px; line-height: 1.45; }
+.lint .ic { flex: none; margin-top: 2px; }
+.lint--ok { background: var(--up-50); color: var(--up-ink); }
+.lint--warn { background: var(--sun-50); border: 1px solid var(--sun-200); color: #4b3a07; }
+.lint--warn strong { display: block; margin-bottom: 4px; }
+.lint ul { margin: 4px 0 6px; padding-left: 18px; list-style: disc; }
+.lint li { margin: 2px 0; cursor: help; }
+.lint p { margin: 0; color: #5a4a12; }

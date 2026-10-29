@@ -10,21 +10,21 @@ function fmtRR(rr) {
   return `${rr.toLocaleString('da-DK', { maximumFractionDigits: 1, minimumFractionDigits: 1 })} : 1`;
 }
 
-function livePanel(a, locked) {
+function livePanel(a, locked, edu) {
   const n = a.niveauer;
-  const levels = locked ? null : { kurs: n.kurs, maal: n.maal, stop: n.stop };
+  const levels = edu ? (n.kurs != null ? { kurs: n.kurs } : null) : locked ? null : { kurs: n.kurs, maal: n.maal, stop: n.stop };
   return html`<section class="livepanel" data-quote="${a.symbol}" aria-label="Live kurs og graf for ${a.aktie}">
   <div class="livepanel__strip">
     <div class="lp"><span class="lp__label">Kurs nu</span><span class="lp__big"><span data-f="price">–</span> <span class="lp__cur">${a.valuta}</span></span></div>
     <div class="lp"><span class="lp__label">I dag</span><span class="delta delta--lg" data-f="chg">&nbsp;</span></div>
-    ${n.kurs != null ? html`<div class="lp"><span class="lp__label">Siden analysen</span><span class="delta delta--lg" data-f="since" data-base="${n.kurs}">&nbsp;</span></div>` : ''}
+    ${n.kurs != null && !edu ? html`<div class="lp"><span class="lp__label">Siden analysen</span><span class="delta delta--lg" data-f="since" data-base="${n.kurs}">&nbsp;</span></div>` : ''}
     <div class="lp lp--time"><span class="lp__label">Senest handlet</span><span class="lp__time" data-f="time">–</span></div>
   </div>
-  ${n.kurs != null && !locked && (n.maal != null || n.stop != null) ? html`<div class="levelbar" data-levelbar data-entry="${n.kurs}" data-target="${n.maal == null ? '' : n.maal}" data-stop="${n.stop == null ? '' : n.stop}" data-setup="${a.setup}">
+  ${n.kurs != null && !locked && !edu && (n.maal != null || n.stop != null) ? html`<div class="levelbar" data-levelbar data-entry="${n.kurs}" data-target="${n.maal == null ? '' : n.maal}" data-stop="${n.stop == null ? '' : n.stop}" data-setup="${a.setup}">
     <div class="levelbar__track" data-lb-track></div>
     <p class="levelbar__caption">Hvor kursen ligger i forhold til analysens niveauer</p>
   </div>` : ''}
-  ${locked ? html`<p class="lockline">${icon('lock', { size: 16 })}Kursmål og stop i denne analyse er for medlemmer.</p>` : ''}
+  ${locked && !edu ? html`<p class="lockline">${icon('lock', { size: 16 })}Kursmål og stop i denne analyse er for medlemmer.</p>` : ''}
   <div class="chartbox">
     <div class="chartbox__bar">
       <div class="chartbox__legend" data-chart-legend aria-live="off">&nbsp;</div>
@@ -67,7 +67,7 @@ function disclosure(site, a, author, when) {
       <div><dt>Udarbejdet af</dt><dd>${author}${s.forfatter_titel ? `, ${s.forfatter_titel}` : ''}</dd></div>
       <div><dt>Færdiggjort</dt><dd>${when}</dd></div>
       <div><dt>Forfatterens position</dt><dd>${pos}</dd></div>
-      <div><dt>Forelagt selskabet</dt><dd>${a.forelagt ? 'Ja, analysen er forelagt selskabet før udgivelsen.' : 'Nej, analysen er ikke forelagt selskabet før udgivelsen.'}</dd></div>
+      ${site.edu ? '' : html`<div><dt>Forelagt selskabet</dt><dd>${a.forelagt ? 'Ja, analysen er forelagt selskabet før udgivelsen.' : 'Nej, analysen er ikke forelagt selskabet før udgivelsen.'}</dd></div>`}
       ${a.kilder.length ? html`<div><dt>Kilder</dt><dd><ul class="disclosure__src">${a.kilder.map((k) => html`<li>${/^https?:\/\/\S+$/.test(k) ? html`<a href="${k}" target="_blank" rel="noopener nofollow">${k.replace(/^https?:\/\/(www\.)?/, '')}</a>` : k}</li>`)}</ul></dd></div>` : ''}
     </dl>
   </div>
@@ -90,7 +90,7 @@ function aside(site, a, locked) {
   </nav>` : ''}
   <div class="asidebox asidebox--cta">
     <h2>Få alle analyser</h2>
-    <p>Med et medlemskab får du hele arkivet, nye analyser og adgang til porteføljen.</p>
+    <p>Med et medlemskab får du hele arkivet, nye analyser og adgang til ${site.model ? 'modelporteføljen' : 'porteføljen'}.</p>
     <a class="btn btn--primary btn--block" href="/medlemskab/">Se medlemskaber</a>
   </div>
 </aside>`;
@@ -110,6 +110,7 @@ function shareBar(site, a, url) {
 function analysePage(site, a) {
   const s = site.settings;
   const locked = a.tier === 'premium' && s.premium_visning === 'teaser';
+  const edu = site.edu;
   const path = `/analyser/${a.slug}/`;
   const url = (site.siteUrl || '') + path;
   const author = s.forfatter || s.sitenavn;
@@ -125,7 +126,7 @@ function analysePage(site, a) {
   <header class="article__head">
     <div class="wrap">
       <nav class="crumbs" aria-label="Brødkrummer"><a href="/analyser/">Analyser</a>${icon('chevronRight', { size: 14 })}<span>${a.aktie}</span></nav>
-      <div class="acard__chips">${C.setupChip(a.setup)}${C.typeChips(a.types)}${a.sektor ? html`<span class="chip">${a.sektor}</span>` : ''}${a.tier === 'premium' ? C.premiumChip() : ''}${a.demo ? C.demoChip() : ''}</div>
+      <div class="acard__chips">${edu ? '' : C.setupChip(a.setup)}${C.typeChips(a.types)}${a.sektor ? html`<span class="chip">${a.sektor}</span>` : ''}${a.tier === 'premium' ? C.premiumChip() : ''}${a.demo ? C.demoChip() : ''}</div>
       <h1>${a.aktie}: ${a.titel}</h1>
       <p class="article__lede">${a.lede}</p>
       <div class="byline">
@@ -133,26 +134,28 @@ function analysePage(site, a) {
         <span class="byline__who"><strong>${author}${s.forfatter_titel ? html`<span class="byline__title">, ${s.forfatter_titel}</span>` : ''}</strong><span>${when} · ${a.laesetid} min. læsning</span></span>
         ${shareBar(site, a, url)}
       </div>
-      ${a.demo ? html`<p class="demonote">${icon('info', { size: 16 })}Dette er en eksempelanalyse, der viser sidens opbygning. Tal og positioner er ikke rigtige.</p>` : ''}
+      ${a.demo ? html`<p class="demonote">${icon('info', { size: 16 })}Dette er ${edu ? 'en eksempelcase' : 'en eksempelanalyse'}, der viser sidens opbygning. Tal og positioner er ikke rigtige.</p>` : ''}
     </div>
   </header>
 
-  ${a.symbol ? html`<div class="wrap">${livePanel(a, locked)}</div>` : ''}
+  ${a.symbol ? html`<div class="wrap">${livePanel(a, locked, edu)}</div>` : ''}
 
   <div class="wrap article__grid">
     <div class="article__main">
-      ${keyLevels(a, locked)}
+      ${edu
+        ? html`<p class="casenote">${icon('info', { size: 18 })}<span>Dette er en undervisningscase. Den viser, hvordan metoden bruges på en rigtig aktie, men indeholder ingen kursmål, stop eller opfordring til at købe eller sælge.</span></p>`
+        : keyLevels(a, locked)}
       <div class="prose">
         ${raw(locked ? a.teaserHtml : a.html)}
       </div>
       ${locked ? html`<div class="paywall">
         <div class="paywall__icon">${icon('lock', { size: 22 })}</div>
         <h2>Resten af analysen er for medlemmer</h2>
-        <p>Få hele gennemgangen med scenarier, risici, kursmål og stop – og adgang til alle tidligere analyser.</p>
+        <p>${edu ? 'Få hele gennemgangen med scenarier og risici – og adgang til alle tidligere cases.' : 'Få hele gennemgangen med scenarier, risici, kursmål og stop – og adgang til alle tidligere analyser.'}</p>
         <a class="btn btn--primary" href="/medlemskab/">Se medlemskaber</a>
       </div>` : ''}
       ${disclosure(site, a, author, when)}
-      <p class="article__disc"><strong>Husk:</strong> Analysen er udelukkende til undervisning. ${s.sitenavn} udbyder ikke rådgivning eller anbefalinger. Foretag altid dine egne beslutninger, inden du handler. Historiske afkast er ingen garanti for fremtidige afkast.</p>
+      <p class="article__disc"><strong>Husk:</strong> Analysen er udelukkende til undervisning og tager ikke højde for din økonomi, dine mål eller din risikovillighed. ${s.sitenavn} udbyder ikke rådgivning eller anbefalinger. Foretag altid dine egne beslutninger, inden du handler. Historiske afkast er ingen garanti for fremtidige afkast.</p>
     </div>
     ${aside(site, a, locked)}
   </div>
@@ -161,7 +164,7 @@ function analysePage(site, a) {
 ${related.length ? html`<section class="band band--paper" aria-labelledby="related-title">
   <div class="wrap">
     <div class="sechead"><div><h2 id="related-title">Læs også</h2></div><a class="textlink" href="/analyser/">Alle analyser ${icon('arrowRight', { size: 16 })}</a></div>
-    <div class="agrid agrid--3">${related.map((r) => C.analysisCard(r, { compact: true }))}</div>
+    <div class="agrid agrid--3">${related.map((r) => C.analysisCard(r, { compact: true, edu }))}</div>
   </div>
 </section>` : ''}
 <script type="application/ld+json">${raw(JSON.stringify(ld).replace(/</g, '\\u003c'))}</script>`;

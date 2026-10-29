@@ -60,6 +60,9 @@ function closedRow(site, p) {
 
 module.exports = function portefoljePage(site) {
   const all = site.portfolio;
+  const delay = site.settings.portefolje_forsinkelse;
+  const pending = site.portfolioPending || 0;
+  const pendingText = pending ? ` – ${pending} ${pending === 1 ? 'nyere handel vises' : 'nyere handler vises'} senere` : '';
   const open = all.filter((p) => p.status === 'aaben');
   const closed = all.filter((p) => p.status === 'lukket');
   const alloc = allocation(open);
@@ -68,16 +71,22 @@ module.exports = function portefoljePage(site) {
   const wins = closedVisible.filter((p) => p.salgskurs > p.koebskurs).length;
   const realized = closedVisible.length ? closedVisible.reduce((s, p) => s + ((p.salgskurs - p.koebskurs) / p.koebskurs) * 100, 0) / closedVisible.length : null;
   const hasDemo = all.some((p) => p.demo);
+  const model = site.model;
+  const title = model ? 'Modelporteføljen' : 'Porteføljen';
 
   const body = html`
 ${C.pageHead({
-    title: 'Porteføljen',
-    intro: 'Min egen portefølje, vist åbent. Du kan se hvad jeg har købt, til hvilken kurs og hvordan det går – også når det går den forkerte vej.',
+    kicker: model ? 'Modelportefølje – tænkte handler' : '',
+    title,
+    intro: model
+      ? 'En modelportefølje, vist åbent. Handlerne er tænkte og ikke foretaget med rigtige penge – de viser, hvordan metoden ville have klaret sig. Også når det går den forkerte vej.'
+      : 'Min egen portefølje, vist åbent. Du kan se hvad jeg har købt, til hvilken kurs og hvordan det går – også når det går den forkerte vej.',
   })}
 <section class="band band--paper band--flush">
   <div class="wrap">
-    <p class="pf-disc">${icon('shield', { size: 18 })}Porteføljen vises for gennemsigtighedens skyld. Den er ikke en anbefaling om at købe eller sælge.</p>
-    ${hasDemo ? html`<p class="demonote">${icon('info', { size: 16 })}Porteføljen viser i øjeblikket eksempeldata. De rigtige positioner tilføjes i admin.</p>` : ''}
+    ${model ? html`<p class="pf-model">${icon('info', { size: 18 })}<span><strong>Det her er en modelportefølje.</strong> Der er ikke købt eller solgt aktier for rigtige penge. Hver handel registreres med datoen og kursen den dag, den lægges ind, og afkastet er beregnet uden kurtage, skat, udbytte og valutaomkostninger. Om udgiveren selv ejer en aktie, står i den enkelte case.</span></p>` : ''}
+    <p class="pf-disc">${icon('shield', { size: 18 })}<span>${model ? 'Modelporteføljen viser metoden i praksis' : 'Porteføljen vises for gennemsigtighedens skyld'}. Den er ikke en anbefaling om at købe eller sælge og ikke noget, du skal kopiere.${delay ? ` Nye ${model ? 'handler' : 'køb og salg'} vises først ${delay} dage efter${model ? ', at de er registreret' : ' handlen'}${pendingText}.` : ''}</span></p>
+    ${hasDemo ? html`<p class="demonote">${icon('info', { size: 16 })}${model ? 'Modelporteføljen viser i øjeblikket eksempeldata. Dine egne modelhandler tilføjes i admin.' : 'Porteføljen viser i øjeblikket eksempeldata. De rigtige positioner tilføjes i admin.'}</p>` : ''}
 
     <div class="pfstats" data-pf-stats>
       <div class="stat stat--card"><span class="stat__label">Åbne positioner</span><span class="stat__value">${open.length}</span><span class="stat__sub">${open.filter((p) => p.synlighed === 'medlemmer').length ? `${open.filter((p) => p.synlighed === 'medlemmer').length} kun for medlemmer` : 'Alle vises offentligt'}</span></div>
@@ -122,7 +131,7 @@ ${C.pageHead({
 
     <div class="calcnote">
       <h2>Sådan er afkastet beregnet</h2>
-      <p>Afkastet er kursudviklingen fra købskurs til aktuel kurs (eller salgskurs) i aktiens egen valuta. Kurtage, skat, udbytte og valutakursændringer er ikke medregnet. Kurserne kan være forsinkede op til 15 minutter.</p>
+      <p>Afkastet er kursudviklingen fra købskurs til aktuel kurs (eller salgskurs) i aktiens egen valuta.${model ? ' Handlerne er tænkte: købs- og salgskursen er kursen den dag, handlen blev registreret, og et rigtigt resultat ville have været påvirket af kurtage, skat og spread.' : ''} Kurtage, skat, udbytte og valutakursændringer er ikke medregnet. Kurserne kan være forsinkede op til 15 minutter.</p>
     </div>
   </div>
 </section>
@@ -130,5 +139,5 @@ ${C.pageHead({
   <div class="wrap">${C.disclaimerPanel(site)}</div>
 </section>`;
 
-  return [{ path: '/portefolje/', html: layout(site, { title: 'Porteføljen', path: '/portefolje/', active: 'portefolje', body, scripts: ['portfolio'], description: 'Følg porteføljen med købskurser, aktuelle kurser og afkast, opdateret løbende.' }) }];
+  return [{ path: '/portefolje/', html: layout(site, { title, path: '/portefolje/', active: 'portefolje', body, scripts: ['portfolio'], description: model ? 'Modelportefølje med tænkte handler: købskurser, aktuelle kurser og afkast, opdateret løbende. Ikke rigtige penge og ikke rådgivning.' : 'Følg porteføljen med købskurser, aktuelle kurser og afkast, opdateret løbende.' }) }];
 };
