@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { loadSettings, loadAnalyses, loadPortfolio, delayPortfolio, warnings, warn, ROOT } = require('./lib/data');
+const { loadSettings, loadAnalyses, loadPortfolio, delayPortfolio, loadCourses, warnings, warn, ROOT } = require('./lib/data');
 const { checkLanguage } = require('./lib/lint');
 const { toString } = require('./lib/util');
 
@@ -65,7 +65,14 @@ function main() {
     edu: settings.indholdstype !== 'anbefalinger', // undervisningstilstand: ingen kursmål, stop eller køb/salg
     portfolioPending: pending.length,
     model: settings.portefolje_type === 'model', // modelportefølje: tænkte handler
+    courses: loadCourses(),
   };
+
+  // Kursernes tal og satser (skattegrænser, satser, lofter) gælder ét år ad gangen. Påmind om at gennemgå dem, når året skifter.
+  for (const c of site.courses) {
+    const y = new Date().getFullYear();
+    if (c.ratesYear && c.ratesYear < y) warn(`Tal og satser i "${c.navn}" er fra ${c.ratesYear}. Gennemgå især skattelektionerne, og ret derefter årstallet under Kurser i admin.`);
+  }
 
   // Sprogtjek i undervisningstilstand: udgivet indhold, der lyder som en anbefaling, vises som advarsel i admin (Overblik).
   if (site.edu) {
@@ -120,6 +127,8 @@ function main() {
     ...require('./pages/markedet')(site),
     ...require('./pages/content')(site),
     ...require('./pages/legal')(site),
+    ...require('./pages/kurser')(site),
+    ...require('./pages/beregner')(site),
   ];
   for (const p of pages) {
     const rel = p.file || path.join(p.path.replace(/^\//, ''), 'index.html');
@@ -154,7 +163,7 @@ function main() {
   const analysisJs = path.join(DIST, 'assets/js/analysis.js');
   if (fs.existsSync(analysisJs)) fs.writeFileSync(analysisJs, fs.readFileSync(analysisJs, 'utf8').replace('{{LWC_FILE}}', `/vendor/lightweight-charts-${lwcVersion}.js`));
 
-  console.log(`✓ ${pages.length} sider, ${analyses.length} analyser, ${portfolio.length} positioner${pending.length ? ` (+${pending.length} vises senere)` : ''}, ${site.edu ? 'undervisningstilstand' : 'analyser med kursmål'} på ${Date.now() - t0} ms`);
+  console.log(`✓ ${pages.length} sider, ${analyses.length} analyser, ${site.courses.reduce((n, c) => n + c.lessons.length, 0)} lektioner, ${portfolio.length} positioner${pending.length ? ` (+${pending.length} vises senere)` : ''}, ${site.edu ? 'undervisningstilstand' : 'analyser med kursmål'} på ${Date.now() - t0} ms`);
   if (warnings.length) console.log(`  ${warnings.length} advarsel(er) – se ovenfor`);
 }
 

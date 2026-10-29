@@ -144,4 +144,54 @@ function aiExample() {
 </figure>`;
 }
 
-module.exports = { compassCard, compassDial, heatmap, quoteTile, pricing, faqList, aiExample };
+/* ---------- Beregner: hvad kan opsparingen vokse til? ----------
+ * Samme regnestykke køres i public/assets/js/calc.js. Månedlige indbetalinger sidst på måneden,
+ * fast årligt afkast omregnet til en månedlig rente, og ÅOP trukket fra afkastet.
+ */
+const CALC_DEFAULTS = { start: 25000, monthly: 2000, rate: 6, years: 20, cost: 0.5 };
+function project({ start, monthly, rate, years, cost }) {
+  const r = rate / 100, c = cost / 100;
+  const m = Math.pow((1 + r) * (1 - c), 1 / 12) - 1;
+  const mg = Math.pow(1 + r, 1 / 12) - 1;
+  let v = start, g = start;
+  for (let i = 0; i < years * 12; i++) { v = v * (1 + m) + monthly; g = g * (1 + mg) + monthly; }
+  const paid = start + monthly * 12 * years;
+  return { value: v, paid, gain: v - paid, costLoss: g - v };
+}
+const kr = (n) => `${Math.round(n).toLocaleString('da-DK')} kr.`;
+
+function calcField(id, key, label, { value, unit, min, max, step, slider }) {
+  return html`<div class="calc__f">
+    <label for="${id}-${key}">${label}</label>
+    ${slider
+      ? html`<div class="calc__range"><input id="${id}-${key}" type="range" min="${min}" max="${max}" step="${step}" value="${value}" data-calc-in="${key}"><output for="${id}-${key}" data-calc-show="${key}">${String(value).replace('.', ',')}${unit}</output></div>`
+      : html`<div class="calc__money"><input id="${id}-${key}" type="text" inputmode="numeric" autocomplete="off" value="${Math.round(value).toLocaleString('da-DK')}" data-calc-in="${key}"><span>kr.</span></div>`}
+  </div>`;
+}
+
+function calculator(site, { id = 'calc', heading = true } = {}) {
+  const d = CALC_DEFAULTS;
+  const p = project(d);
+  return html`<div class="calc" data-calc>
+  <form class="calc__form" data-calc-form onsubmit="return false" aria-label="Beregner">
+    ${calcField(id, 'start', 'Startbeløb', { value: d.start })}
+    ${calcField(id, 'monthly', 'Månedlig opsparing', { value: d.monthly })}
+    ${calcField(id, 'rate', 'Årligt afkast før omkostninger', { value: d.rate, unit: ' %', min: 0, max: 12, step: 0.5, slider: true })}
+    ${calcField(id, 'years', 'Antal år', { value: d.years, unit: ' år', min: 1, max: 50, step: 1, slider: true })}
+    ${calcField(id, 'cost', 'Årlige omkostninger (ÅOP)', { value: d.cost, unit: ' %', min: 0, max: 3, step: 0.1, slider: true })}
+  </form>
+  <div class="calc__out" aria-live="polite">
+    <p class="calc__lead">Efter <span data-calc-out="years">${d.years}</span> år</p>
+    <p class="calc__big" data-calc-out="value">${kr(p.value)}</p>
+    <dl class="calc__parts">
+      <div><dt><i class="sw sw--blue" aria-hidden="true"></i>Indbetalt</dt><dd data-calc-out="paid">${kr(p.paid)}</dd></div>
+      <div><dt><i class="sw sw--sun" aria-hidden="true"></i>Afkast</dt><dd data-calc-out="gain">${kr(p.gain)}</dd></div>
+      <div><dt>Tabt til omkostninger</dt><dd data-calc-out="cost">${kr(p.costLoss)}</dd></div>
+    </dl>
+    <div class="calc__chart" data-calc-chart aria-hidden="true"></div>
+    <p class="calc__note">Regneeksempel med et fast årligt afkast og indbetalinger sidst på måneden – før skat. I virkeligheden svinger afkastet, og det kan i perioder være negativt. Beregneren er ikke en prognose og ikke rådgivning.</p>
+  </div>
+</div>`;
+}
+
+module.exports = { compassCard, compassDial, heatmap, quoteTile, pricing, faqList, aiExample, calculator, project, CALC_DEFAULTS };

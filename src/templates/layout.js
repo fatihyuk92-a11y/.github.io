@@ -3,6 +3,7 @@ const { html, raw, esc } = require('../lib/util');
 const { icon, logoMark } = require('./icons');
 
 const NAV = [
+  { href: '/kurser/', label: 'Kurser', key: 'kurser' },
   { href: '/analyser/', label: 'Analyser', key: 'analyser' },
   { href: '/portefolje/', label: 'Portefølje', key: 'portefolje' },
   { href: '/markedet/', label: 'Markedet', key: 'markedet' },
@@ -58,7 +59,7 @@ function header(site, active) {
     <a class="brand" href="/" aria-label="${site.settings.sitenavn} – forside">${logoMark(30)}<span>${site.settings.sitenavn}</span></a>
     <nav class="mainnav" id="mainnav" aria-label="Hovedmenu">
       <ul>
-        ${NAV.filter((n) => n.key !== 'portefolje' || site.settings.vis_portefolje).map((n) => html`<li><a href="${n.href}"${n.key === active ? raw(' aria-current="page"') : ''}>${n.label}</a></li>`)}
+        ${NAV.filter((n) => (n.key !== 'portefolje' || site.settings.vis_portefolje) && (n.key !== 'kurser' || (site.courses || []).length)).map((n) => html`<li><a href="${n.href}"${n.key === active ? raw(' aria-current="page"') : ''}>${n.label}</a></li>`)}
       </ul>
       <a class="btn btn--primary mainnav__cta" href="/medlemskab/">Bliv medlem</a>
     </nav>
@@ -80,7 +81,7 @@ function header(site, active) {
 function tickerBar(site) {
   const items = site.settings.ticker;
   if (!items.length) return '';
-  return html`<div class="ticker" data-ticker aria-label="Udvalgte kurser">
+  return html`<div class="ticker" data-ticker aria-label="Udvalgte aktiekurser">
   <div class="ticker__viewport">
     <ul class="ticker__track" data-ticker-track>
       ${items.map((t) => html`<li class="tick" data-quote="${t.symbol}"><span class="tick__name">${t.navn}</span><span class="tick__price" data-f="price">–</span><span class="delta" data-f="chg">&nbsp;</span></li>`)}
@@ -104,10 +105,12 @@ function footer(site) {
       <nav aria-label="Indhold">
         <h2>Indhold</h2>
         <ul>
+          ${(site.courses || []).length ? html`<li><a href="/kurser/">Kurser</a></li>` : ''}
           <li><a href="/analyser/">Analyser</a></li>
           ${s.vis_portefolje ? html`<li><a href="/portefolje/">Portefølje</a></li>` : ''}
           <li><a href="/markedet/">Markedet</a></li>
           <li><a href="/ai-assistent/">AI-assistent</a></li>
+          <li><a href="/beregner/">Beregner</a></li>
         </ul>
       </nav>
       <nav aria-label="Om sitet">

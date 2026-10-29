@@ -56,7 +56,9 @@ function renderMarkdown(src) {
   const htmlOut = md
     .parse(String(src || ''))
     // Et billede alene i et afsnit bliver til <figure> – figure må ikke ligge inde i <p>.
-    .replace(/<p>\s*(<figure class="prose-figure">[\s\S]*?<\/figure>)\s*<\/p>/g, '$1');
+    .replace(/<p>\s*(<figure class="prose-figure">[\s\S]*?<\/figure>)\s*<\/p>/g, '$1')
+    // Tal og enhed holdes sammen på samme linje: "27 %", "79.400 kr.", "1,5 mio. kr."
+    .replace(/>([^<]+)</g, (m, t) => `>${t.replace(/(\d) (%|kr\.|mio\.|mia\.)/g, '$1\u00a0$2')}<`);
   return { html: htmlOut, headings };
 }
 

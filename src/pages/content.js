@@ -153,9 +153,10 @@ function faqGroups(site) {
     { q: 'Hvad er forskellen på Plus og Premium?', a: '<p>Plus giver dig hele arkivet og nye cases. Premium giver derudover spørgetimer om metoderne, de lukkede grupper og ubegrænset brug af AI-assistenten.</p>' },
     { q: 'Jeg er helt ny. Hvor starter jeg?', a: '<p>Start med <strong>Introduktion</strong>. Den giver dig fundamentet, før du kaster dig over de løbende cases.</p>' },
   ] },
+  ...((site.courses || []).length ? [{ title: 'Kurser', items: require('./kurser').COURSE_FAQ(site, site.courses) }] : []),
   { title: 'Indhold og data', items: [
     { q: 'Hvilke markeder dækkes?', a: `<p>${s.forside_marked === 'dk' ? 'Primært danske storaktier og udvalgte amerikanske og europæiske aktier.' : 'Primært amerikanske og danske storaktier – og udvalgte europæiske aktier.'}</p>` },
-    { q: 'Hvor kommer kurserne fra?', a: '<p>Kurserne hentes fra Yahoo Finance via sitets egen server. De opdateres løbende, men kan være forsinkede op til 15 minutter.</p>' },
+    { q: 'Hvor kommer aktiekurserne fra?', a: '<p>Aktiekurserne hentes fra Yahoo Finance via sitets egen server. De opdateres løbende, men kan være forsinkede op til 15 minutter.</p>' },
     s.portefolje_type === 'model'
       ? { q: 'Ejer du selv de aktier, du skriver om?', a: `<p>Det står altid i den enkelte case.${s.vis_portefolje ? ' Porteføljen på siden er en modelportefølje med tænkte handler, så den viser ikke, hvad jeg selv ejer.' : ''}</p>` }
       : { q: 'Ejer du selv de aktier, du skriver om?', a: `<p>Ofte. Det står altid i den enkelte analyse${s.vis_portefolje ? `, og porteføljen vises åbent${s.portefolje_forsinkelse ? ` med ${s.portefolje_forsinkelse} dages forsinkelse` : ''}` : ''}.</p>` },
@@ -220,8 +221,12 @@ ${C.pageHead({ title: 'Vigtigt at vide', intro: 'Læs dette, før du bliver medl
 
 function medlemskabPage(site) {
   const tiers = site.settings.priser;
+  // Sammenligningen viser linjer, som flere medlemskaber har – plus dem, kun det største har.
+  // Linjer, kun et mindre medlemskab har, beskriver dets indhold (fx begynderkursets emner) og står på kortet.
   const featureNames = [];
   for (const t of tiers) for (const f of t.features) if (!featureNames.includes(f.tekst)) featureNames.push(f.tekst);
+  const inTiers = (name) => tiers.filter((t) => t.features.some((f) => f.tekst === name));
+  const compareNames = featureNames.filter((name) => { const ts = inTiers(name); return ts.length > 1 || ts[0] === tiers[tiers.length - 1]; });
   const has = (t, name) => { const f = t.features.find((x) => x.tekst === name); return f ? f.med : false; };
   const body = html`
 ${C.pageHead({ title: 'Medlemskab', intro: 'Tre måder at komme i gang på. Plus og Premium har ingen binding og kan opsiges fra måned til måned.' })}
@@ -234,7 +239,7 @@ ${C.pageHead({ title: 'Medlemskab', intro: 'Tre måder at komme i gang på. Plus
         <table class="dtable dtable--compare">
           <thead><tr><th scope="col">Det får du</th>${tiers.map((t) => html`<th scope="col" class="c${t.fremhaevet ? ' is-featured' : ''}">${t.navn}</th>`)}</tr></thead>
           <tbody>
-            ${featureNames.map((name) => html`<tr><th scope="row">${name}</th>${tiers.map((t) => html`<td class="c${t.fremhaevet ? ' is-featured' : ''}">${has(t, name) ? html`<span class="yes">${icon('check', { size: 18, label: 'Inkluderet' })}</span>` : html`<span class="no" aria-label="Ikke inkluderet">–</span>`}</td>`)}</tr>`)}
+            ${compareNames.map((name) => html`<tr><th scope="row">${name}</th>${tiers.map((t) => html`<td class="c${t.fremhaevet ? ' is-featured' : ''}">${has(t, name) ? html`<span class="yes">${icon('check', { size: 18, label: 'Inkluderet' })}</span>` : html`<span class="no" aria-label="Ikke inkluderet">–</span>`}</td>`)}</tr>`)}
             <tr><th scope="row">Pris</th>${tiers.map((t) => html`<td class="c${t.fremhaevet ? ' is-featured' : ''}"><strong>${t.pris}</strong><small class="block">${t.periode}</small></td>`)}</tr>
           </tbody>
         </table>

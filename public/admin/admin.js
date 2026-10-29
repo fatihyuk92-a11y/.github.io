@@ -61,6 +61,7 @@ const ICONS = {
   bold: '<path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"/>',
   italic: '<path d="M11 5h7M6 19h7M14.5 5l-5 14"/>',
   template: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 9v11"/>',
+  book: '<path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5z"/><path d="M5 20.5A2.5 2.5 0 0 1 7.5 18H19v3H7.5A2.5 2.5 0 0 1 5 20.5zM9 7h6"/>',
   github: '<path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/>',
 };
 function icon(name, size = 18) {
@@ -158,7 +159,7 @@ const S = {
   dirty: false,
   cleanup: [], // ryddes ved hvert sideskift (fx tastaturgenveje)
 };
-const PATHS = { analyser: '_data/analyser', portfolio: '_data/portefolje.json', settings: '_data/settings.json' };
+const PATHS = { analyser: '_data/analyser', portfolio: '_data/portefolje.json', settings: '_data/settings.json', courses: '_data/kurser/kurser.json', coursesDir: '_data/kurser' };
 const root = document.getElementById('app');
 
 /* =====================================================================
@@ -316,13 +317,13 @@ function parseMd(text) {
   }
 }
 
-const KEY_ORDER = ['titel', 'slug', 'aktie_navn', 'symbol', 'tv_symbol', 'valuta', 'dato', 'tid', 'status', 'setup_type', 'analyse_type', 'sektor', 'marked', 'tier', 'lede', 'niveauer', 'forudsaetninger', 'fakta', 'position', 'kilder', 'forelagt', 'billede', 'demo'];
+const KEY_ORDER = ['titel', 'modul', 'nr', 'gratis', 'slug', 'aktie_navn', 'symbol', 'tv_symbol', 'valuta', 'dato', 'tid', 'status', 'setup_type', 'analyse_type', 'sektor', 'marked', 'tier', 'lede', 'niveauer', 'forudsaetninger', 'fakta', 'position', 'kilder', 'forelagt', 'billede', 'demo'];
 function stringifyMd(data, body) {
   const ordered = {};
   for (const k of KEY_ORDER) if (data[k] !== undefined) ordered[k] = data[k];
   for (const [k, v] of Object.entries(data)) if (!(k in ordered) && v !== undefined) ordered[k] = v;
   // forceQuotes: alle tekster skrives i anførselstegn, så sidens bygger (YAML 1.1) læser dem præcis som skrevet – fx "16:42" og "yes".
-  return `---\n${yaml.dump(ordered, { lineWidth: -1, noRefs: true, forceQuotes: true, quotingType: '"' })}---\n\n${String(body || '').trim()}\n`;
+  return `---\n${yaml.dump(ordered, { lineWidth: -1, noRefs: true, forceQuotes: true, quoteStyle: 'double' })}---\n\n${String(body || '').trim()}\n`;
 }
 
 const byDate = (a, b) => String(b.data.dato || '').localeCompare(String(a.data.dato || '')) || a.file.localeCompare(b.file);
@@ -382,7 +383,7 @@ function logout() {
   window.removeEventListener('hashchange', onRoute);
   S.cleanup.splice(0).forEach((fn) => fn());
   clearTimeout(Deploy.timer);
-  Object.assign(S, { gh: null, user: null, analyses: null, portfolio: null, settings: null, dirty: false });
+  Object.assign(S, { gh: null, user: null, analyses: null, portfolio: null, settings: null, courses: null, lessons: null, dirty: false });
   history.replaceState(null, '', location.pathname);
   showLogin();
 }
@@ -445,6 +446,7 @@ window.addEventListener('beforeunload', (e) => { if (S.dirty) { e.preventDefault
 const NAV = [
   { href: '#/', label: 'Overblik', icon: 'home', key: '' },
   { href: '#/analyser', label: 'Analyser', icon: 'chart', key: 'analyser' },
+  { href: '#/kursus', label: 'Kurser', icon: 'book', key: 'kursus' },
   { href: '#/portefolje', label: 'Portefølje', icon: 'briefcase', key: 'portefolje' },
   { href: '#/indstillinger', label: 'Indstillinger', icon: 'settings', key: 'indstillinger' },
 ];
@@ -492,6 +494,9 @@ async function onRoute() {
     if (!section) await viewOverview();
     else if (section === 'analyser' && !action) await viewAnalyses();
     else if (section === 'analyser') await viewAnalysisEditor(action, arg);
+    else if (section === 'kursus' && !action) await viewCourses();
+    else if (section === 'kursus' && !arg) await viewCourse(action);
+    else if (section === 'kursus') await viewLessonEditor(action, arg, parts[3]);
     else if (section === 'portefolje' && !action) await viewPortfolio();
     else if (section === 'portefolje') await viewPositionEditor(action, arg);
     else if (section === 'indstillinger') await viewSettings(action || 'generelt');
@@ -1243,6 +1248,288 @@ async function viewAnalysisEditor(action, arg) {
 }
 
 /* =====================================================================
+   Kurser
+   ===================================================================== */
+const LESSON_TEMPLATE = `Skriv en kort indledning: Hvad lærer læseren i denne lektion?
+
+## Første afsnit
+
+Forklar emnet med et konkret eksempel.
+
+## Det vigtigste
+
+- Pointe 1
+- Pointe 2
+- Pointe 3`;
+
+const lessonOrder = (modIds) => (a, b) => (modIds.indexOf(a.data.modul) - modIds.indexOf(b.data.modul))
+  || ((Number(a.data.nr) || 999) - (Number(b.data.nr) || 999))
+  || String(a.data.titel || '').localeCompare(String(b.data.titel || ''), 'da');
+
+async function loadLessons(courseId, force = false) {
+  S.lessons = S.lessons || {};
+  if (S.lessons[courseId] && !force) return S.lessons[courseId];
+  const files = (await S.gh.list(`${PATHS.coursesDir}/${courseId}`)).filter((f) => f.name.endsWith('.md'));
+  S.lessons[courseId] = await pool(files, 6, async (f) => {
+    const p = parseMd(await S.gh.readRaw(f.path));
+    return { file: f.name, path: f.path, sha: f.sha, data: p.data, body: p.body, error: p.error };
+  });
+  return S.lessons[courseId];
+}
+function rememberLesson(courseId, entry, removedFile) {
+  S.lessons = S.lessons || {};
+  const list = S.lessons[courseId] || [];
+  S.lessons[courseId] = list.filter((l) => l.file !== removedFile && (!entry || l.file !== entry.file));
+  if (entry) S.lessons[courseId].push(entry);
+}
+function tierLabels(sd) {
+  const m = { intro: 'Introduktion', plus: 'Plus', premium: 'Premium' };
+  for (const t of (sd.priser || [])) if (t && t.id) m[t.id] = t.navn || m[t.id];
+  return m;
+}
+async function findCourse(courseId) {
+  const defs = await loadJson('courses', { kurser: [] });
+  const course = (defs.data.kurser || []).find((c) => c.id === courseId);
+  if (!course) throw new Error('Kurset blev ikke fundet.');
+  return { defs, course };
+}
+
+async function viewCourses() {
+  const paint = painter();
+  const [defs, st] = await Promise.all([loadJson('courses', { kurser: [] }), loadJson('settings', {})]);
+  const courses = defs.data.kurser || [];
+  const lists = await Promise.all(courses.map((c) => loadLessons(c.id)));
+  const labels = tierLabels(st.data || {});
+  paint(
+    pageHead('Kurser', 'Skrevne kurser på siden. Vælg et kursus for at redigere lektioner, moduler og adgang.'),
+    courses.length ? h('div', { class: 'coursegrid' }, courses.map((c, i) => {
+      const ls = lists[i];
+      const drafts = ls.filter((l) => l.data.status === 'kladde').length;
+      return h('a', { class: 'card coursecard', href: `#/kursus/${encodeURIComponent(c.id)}` },
+        h('p', { class: 'coursecard__lvl', text: c.niveau || 'Kursus' }),
+        h('h2', { text: c.navn || c.id }),
+        c.beskrivelse ? h('p', { class: 'muted', text: c.beskrivelse }) : null,
+        h('p', { class: 'coursecard__stats', text: `${(c.moduler || []).length} moduler · ${ls.length - drafts} lektioner udgivet${drafts ? ` · ${drafts} ${drafts === 1 ? 'kladde' : 'kladder'}` : ''}` }),
+        h('p', { class: 'coursecard__tiers', text: `Indgår i: ${(c.adgang || []).map((t) => labels[t] || t).join(', ') || '–'}` }));
+    })) : h('div', { class: 'card empty' }, h('p', { text: 'Der er ingen kurser endnu.' })));
+}
+
+async function viewCourse(courseId) {
+  const paint = painter();
+  const [{ defs, course }, st] = await Promise.all([findCourse(courseId), loadJson('settings', {})]);
+  const lessons = await loadLessons(courseId);
+  const labels = tierLabels(st.data || {});
+  const modIds = (course.moduler || []).map((m) => m.id);
+  const sorted = [...lessons].sort(lessonOrder(modIds));
+  const base = `#/kursus/${encodeURIComponent(courseId)}`;
+
+  // Flyt en lektion op eller ned: rækkefølgen i modulet nummereres 1, 2, 3 … og gemmes i ét commit.
+  async function move(lesson, dir) {
+    if (S.dirty) return toast('Gem kursets oplysninger først – ellers går dine ændringer tabt.', 'error', 6000);
+    const inMod = sorted.filter((l) => l.data.modul === lesson.data.modul);
+    const i = inMod.indexOf(lesson), j = i + dir;
+    if (j < 0 || j >= inMod.length) return;
+    [inMod[i], inMod[j]] = [inMod[j], inMod[i]];
+    const changes = [], expect = {}, updated = [];
+    inMod.forEach((l, k) => {
+      if (Number(l.data.nr) === k + 1) return;
+      const data = { ...l.data, nr: k + 1 };
+      const text = stringifyMd(data, l.body);
+      changes.push({ path: l.path, text }); expect[l.path] = l.sha; updated.push({ l, data });
+    });
+    if (!changes.length) return;
+    try {
+      const res = await save(changes, `Ny rækkefølge i ${course.navn}`, expect);
+      for (const u of updated) rememberLesson(courseId, { ...u.l, sha: res.blobs[u.l.path], data: u.data });
+      toast('Rækkefølgen er gemt. Siden opdateres om ca. 1 minut.', 'success');
+      go(base);
+    } catch (err) { toast(`Kunne ikke gemme: ${err.message}`, 'error', 8000); }
+  }
+
+  const lessonRow = (l, num, first, last) => h('tr', null,
+    h('td', { class: 'c-num', text: num }),
+    h('td', { class: 'c-main' }, h('a', { class: 'rowlink', href: `${base}/rediger/${encodeURIComponent(l.file)}` }, h('strong', { text: l.data.titel || l.file })), l.error ? h('span', { class: 'sub', text: `Fejl i filen: ${l.error}` }) : null),
+    h('td', { class: 'c-status' }, h('span', { class: `badge ${l.data.status === 'kladde' ? 'badge--draft' : 'badge--live'}`, text: l.data.status === 'kladde' ? 'Kladde' : 'Udgivet' }), l.data.gratis === true ? h('span', { class: 'badge badge--free', text: 'Gratis' }) : null),
+    h('td', { class: 'actions' },
+      h('button', { type: 'button', class: 'iconbtn', title: 'Flyt op', 'aria-label': `Flyt "${l.data.titel}" op`, disabled: first, onclick: () => move(l, -1) }, icon('up')),
+      h('button', { type: 'button', class: 'iconbtn', title: 'Flyt ned', 'aria-label': `Flyt "${l.data.titel}" ned`, disabled: last, onclick: () => move(l, 1) }, icon('down')),
+      h('a', { class: 'iconbtn', href: `${base}/rediger/${encodeURIComponent(l.file)}`, title: 'Redigér', 'aria-label': 'Redigér' }, icon('edit')),
+      l.data.status === 'kladde' ? null : h('a', { class: 'iconbtn', href: `/kurser/${courseId}/${slugify(l.data.slug || l.file.replace(/\.md$/, ''))}/`, target: '_blank', rel: 'noopener', title: 'Se på siden', 'aria-label': 'Se på siden' }, icon('external'))));
+
+  const modCards = (course.moduler || []).map((m, mi) => {
+    const ls = sorted.filter((l) => l.data.modul === m.id);
+    return h('section', { class: 'card card--flush modcard' },
+      h('div', { class: 'modcard__head' },
+        h('div', null, h('p', { class: 'modcard__n', text: `Modul ${mi + 1}` }), h('h2', { text: m.titel }), m.beskrivelse ? h('p', { class: 'muted', text: m.beskrivelse }) : null),
+        h('a', { class: 'btn btn--secondary btn--sm', href: `${base}/ny/${encodeURIComponent(m.id)}` }, icon('plus', 16), 'Ny lektion')),
+      ls.length
+        ? h('div', { class: 'tablewrap' }, h('table', { class: 'tbl tbl--lessons' }, h('tbody', null, ls.map((l, li) => lessonRow(l, `${mi + 1}.${li + 1}`, li === 0, li === ls.length - 1)))))
+        : h('p', { class: 'muted modcard__empty', text: 'Ingen lektioner endnu.' }));
+  });
+  const orphans = sorted.filter((l) => !modIds.includes(l.data.modul));
+
+  // Kursets oplysninger og moduler. Gem-bjælken vises først, når noget er ændret.
+  const bar = h('div', { class: 'savebar', hidden: true });
+  const touch = () => { markDirty(); bar.hidden = false; };
+  const d = JSON.parse(JSON.stringify(course));
+  d.moduler = d.moduler || []; d.for_hvem = d.for_hvem || []; d.adgang = d.adgang || [];
+  const ch = (k) => (e) => { d[k] = e.target.value; touch(); };
+  const modList = h('div', { class: 'modedit' });
+  const renderMods = () => modList.replaceChildren(...d.moduler.map((m, i) => h('div', { class: 'modedit__row' },
+    h('span', { class: 'modedit__n', text: String(i + 1) }),
+    input(m.titel, { placeholder: 'Modulets titel', oninput: (e) => { m.titel = e.target.value; touch(); } }),
+    input(m.beskrivelse || '', { placeholder: 'Kort beskrivelse', oninput: (e) => { m.beskrivelse = e.target.value; touch(); } }),
+    h('button', { type: 'button', class: 'iconbtn', title: lessons.some((l) => l.data.modul === m.id) ? 'Modulet har lektioner og kan ikke fjernes' : 'Fjern modul', 'aria-label': `Fjern modul ${i + 1}`, disabled: lessons.some((l) => l.data.modul === m.id), onclick: () => { d.moduler.splice(i, 1); touch(); renderMods(); } }, icon('trash')))));
+  renderMods();
+  const addMod = h('button', { type: 'button', class: 'btn btn--ghost btn--sm', onclick: () => {
+    let id = 'nyt-modul', n = 2;
+    while (d.moduler.some((m) => m.id === id)) id = `nyt-modul-${n++}`;
+    d.moduler.push({ id, titel: 'Nyt modul', beskrivelse: '' }); touch(); renderMods();
+  } }, icon('plus', 16), 'Tilføj modul');
+  const tierOpts = Object.entries(labels).filter(([k]) => ['intro', 'plus', 'premium'].includes(k));
+  const saveCourse = h('button', { type: 'button', class: 'btn btn--primary' }, 'Gem kursets oplysninger');
+  saveCourse.addEventListener('click', async () => {
+    if (!String(d.navn || '').trim()) return toast('Skriv kursets navn.', 'error');
+    if (!d.moduler.length) return toast('Kurset skal have mindst ét modul.', 'error');
+    // Nye moduler får en adresse ud fra titlen, når de gemmes første gang.
+    for (const m of d.moduler) {
+      if (/^nyt-modul/.test(m.id) && !lessons.some((l) => l.data.modul === m.id)) {
+        let id = slugify(m.titel) || m.id, n = 2;
+        while (d.moduler.some((x) => x !== m && x.id === id)) id = `${slugify(m.titel)}-${n++}`;
+        m.id = id;
+      }
+      m.titel = String(m.titel || '').trim() || 'Modul';
+    }
+    d.for_hvem = (Array.isArray(d.for_hvem) ? d.for_hvem : String(d.for_hvem).split(/\r?\n/)).map((x) => String(x).trim()).filter(Boolean);
+    const next = JSON.parse(JSON.stringify(defs.data));
+    next.kurser = (next.kurser || []).map((c) => (c.id === courseId ? d : c));
+    saveCourse.disabled = true;
+    try {
+      await saveJson('courses', next, `Opdateret kursus: ${d.navn}`);
+      S.dirty = false; bar.hidden = true;
+      toast('Kurset er gemt. Siden opdateres om ca. 1 minut.', 'success');
+      go(base);
+    } catch (err) { toast(`Kunne ikke gemme: ${err.message}`, 'error', 8000); } finally { saveCourse.disabled = false; }
+  });
+
+  paint(
+    h('a', { class: 'back', href: '#/kursus' }, '← Alle kurser'),
+    pageHead(course.navn, `${(course.moduler || []).length} moduler · ${lessons.length} lektioner. Klik på en lektion for at redigere den.`,
+      h('a', { class: 'btn btn--ghost', href: `/kurser/${courseId}/`, target: '_blank', rel: 'noopener' }, icon('external', 16), 'Se på siden'),
+      h('a', { class: 'btn btn--primary', href: `${base}/ny` }, icon('plus', 18), 'Ny lektion')),
+    modCards,
+    orphans.length ? h('section', { class: 'card card--flush modcard' },
+      h('div', { class: 'modcard__head' }, h('div', null, h('h2', { text: 'Lektioner uden modul' }), h('p', { class: 'muted', text: 'Disse lektioner peger på et modul, der ikke findes, og vises ikke på siden. Åbn dem, og vælg et modul.' }))),
+      h('div', { class: 'tablewrap' }, h('table', { class: 'tbl tbl--lessons' }, h('tbody', null, orphans.map((l) => lessonRow(l, '–', true, true)))))) : null,
+    h('div', { class: 'form' },
+      section('Kursets oplysninger', 'Vises på kursets side, i kursusoversigten og på forsiden.',
+        h('div', { class: 'grid3' },
+          field('Navn', input(d.navn || '', { oninput: ch('navn') }), { required: true }),
+          field('Kort navn', input(d.kort || '', { oninput: ch('kort') }), { hint: 'Bruges i faneblade og brødkrummer, fx "Begynderkurset".' }),
+          field('Niveau', input(d.niveau || '', { oninput: ch('niveau') }), { hint: 'Fx "Begynder".' })),
+        field('Tal og satser er fra', input(d.satser_aar ? String(d.satser_aar) : '', { inputmode: 'numeric', max: 4, oninput: (e) => { d.satser_aar = /^\d{4}$/.test(e.target.value.trim()) ? Number(e.target.value.trim()) : null; touch(); } }), { hint: 'Årstal for skattesatser, grænser og lofter i lektionerne. Når et nyt år starter, minder Overblik dig om at gennemgå lektionerne og rette årstallet.' }),
+        field('Beskrivelse', textarea(d.beskrivelse || '', { rows: 3, oninput: ch('beskrivelse') }), { wide: true }),
+        field('Kurset er for dig, hvis …', textarea((d.for_hvem || []).join('\n'), { rows: 3, oninput: (e) => { d.for_hvem = e.target.value.split(/\r?\n/); touch(); } }), { wide: true, hint: 'Ét punkt pr. linje.' }),
+        h('div', { class: 'f f--wide' }, h('span', { class: 'flabel', text: 'Indgår i medlemskaberne' }), checkChips(tierOpts, d.adgang, (v) => { d.adgang = v; touch(); }), h('p', { class: 'f__hint', text: 'Vises på kursets side. Husk også at rette teksterne under Indstillinger → Priser.' }))),
+      section('Moduler', 'Titel og kort beskrivelse for hvert modul. Et modul med lektioner kan ikke fjernes.', modList, addMod)),
+    (bar.append(h('span', { class: 'savebar__sp', text: 'Du har ændringer, der ikke er gemt.' }), saveCourse), bar));
+}
+
+async function viewLessonEditor(courseId, mode, arg) {
+  const paint = painter();
+  if (mode !== 'ny' && mode !== 'rediger') throw new Error('Siden findes ikke.');
+  const { course } = await findCourse(courseId);
+  const lessons = await loadLessons(courseId);
+  const mods = course.moduler || [];
+  const src = mode === 'rediger' ? lessons.find((l) => l.file === arg) : null;
+  if (mode === 'rediger' && !src) throw new Error('Lektionen blev ikke fundet. Den kan være slettet.');
+  const base = `#/kursus/${encodeURIComponent(courseId)}`;
+  const nextNr = (mid) => Math.max(0, ...lessons.filter((l) => l.data.modul === mid).map((l) => Number(l.data.nr) || 0)) + 1;
+  const startMod = src ? src.data.modul : ((mods.find((m) => m.id === arg) || mods[0] || {}).id || '');
+  const m = {
+    titel: src ? String(src.data.titel || '') : '',
+    modul: startMod,
+    nr: src ? Number(src.data.nr) || 1 : nextNr(startMod),
+    gratis: src ? src.data.gratis === true : false,
+    body: src ? src.body : LESSON_TEMPLATE,
+  };
+  const wasPublished = !!src && src.data.status !== 'kladde';
+  const titelIn = input(m.titel, { placeholder: 'Fx Sådan læser du en årsrapport', required: true, oninput: (e) => { m.titel = e.target.value; markDirty(); } });
+  const nrIn = input(String(m.nr), { inputmode: 'numeric', oninput: (e) => { m.nr = parseInt(e.target.value, 10) || 1; markDirty(); } });
+  const modSel = h('select', { class: 'in', onchange: (e) => { m.modul = e.target.value; if (!src) { m.nr = nextNr(m.modul); nrIn.value = String(m.nr); } markDirty(); } },
+    mods.map((x, i) => h('option', { value: x.id, selected: x.id === m.modul, text: `Modul ${i + 1}: ${x.titel}` })),
+    m.modul && !mods.some((x) => x.id === m.modul) ? h('option', { value: m.modul, selected: true, text: `(findes ikke: ${m.modul})` }) : null);
+  const editor = mdEditor({ value: m.body, onInput: (v) => { m.body = v; markDirty(); }, uploadName: () => slugify(m.titel) || 'lektion' });
+
+  const saveBtn = h('button', { type: 'button', class: 'btn btn--primary' }, wasPublished ? 'Gem ændringer' : 'Gem og udgiv');
+  const draftBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, wasPublished ? 'Gør til kladde' : 'Gem kladde');
+  const delBtn = src ? h('button', { type: 'button', class: 'btn btn--danger-ghost', 'aria-label': 'Slet lektionen' }, icon('trash', 16), h('span', { class: 'btn__label', text: 'Slet' })) : null;
+
+  async function doSave(status) {
+    const errors = [];
+    if (!m.titel.trim()) errors.push('Skriv en titel.');
+    if (!m.modul || !mods.some((x) => x.id === m.modul)) errors.push('Vælg et modul.');
+    if (status === 'udgivet' && !m.body.trim()) errors.push('Lektionen er tom.');
+    if (errors.length) { errors.forEach((e) => toast(e, 'error', 6000)); return; }
+    const data = { ...(src ? src.data : {}), titel: m.titel.trim(), modul: m.modul, nr: m.nr, gratis: m.gratis, status };
+    const file = src ? src.file : (() => {
+      const stem = slugify(m.titel) || 'lektion';
+      let f = `${stem}.md`, n = 2;
+      const names = new Set(lessons.map((l) => l.file));
+      while (names.has(f)) f = `${stem}-${n++}.md`;
+      return f;
+    })();
+    const path = `${PATHS.coursesDir}/${courseId}/${file}`;
+    const text = stringifyMd(data, m.body);
+    saveBtn.disabled = draftBtn.disabled = true;
+    try {
+      const imgs = await stagedChangesFor(m.body);
+      const res = await save([...imgs, { path, text }], `${src ? 'Opdateret' : 'Ny'} lektion i ${course.kort || course.navn}: ${data.titel}`, src ? { [path]: src.sha } : { [path]: null });
+      clearStaged(m.body);
+      S.dirty = false;
+      const p = parseMd(text);
+      rememberLesson(courseId, { file, path, sha: res.blobs[path], data: p.data, body: p.body });
+      toast(status === 'kladde'
+        ? (wasPublished ? 'Lektionen er nu en kladde og fjernes fra siden om ca. 1 minut.' : 'Kladden er gemt. Den vises ikke på siden, før du udgiver den.')
+        : (wasPublished ? 'Ændringerne er gemt. Siden opdateres om ca. 1 minut.' : 'Lektionen er udgivet. Den er på siden om ca. 1 minut.'), 'success', 6500);
+      go(`${base}/rediger/${encodeURIComponent(file)}`);
+    } catch (err) {
+      toast(`Kunne ikke gemme: ${err.message}`, 'error', 8000);
+    } finally { saveBtn.disabled = draftBtn.disabled = false; }
+  }
+  saveBtn.addEventListener('click', () => doSave('udgivet'));
+  draftBtn.addEventListener('click', () => doSave('kladde'));
+  delBtn?.addEventListener('click', async () => {
+    const ok = await dialog({ title: 'Slet lektionen?', text: `"${m.titel}" fjernes fra kurset og fra repoet. Det kan ikke fortrydes her (men findes stadig i historikken på GitHub).`, confirm: 'Slet lektionen', danger: true });
+    if (!ok) return;
+    try {
+      await save([{ path: src.path, delete: true }], `Slettet lektion i ${course.kort || course.navn}: ${m.titel}`, { [src.path]: src.sha });
+      S.dirty = false;
+      rememberLesson(courseId, null, src.file);
+      toast('Lektionen er slettet.', 'success');
+      go(base);
+    } catch (err) { toast(`Kunne ikke slette: ${err.message}`, 'error', 8000); }
+  });
+  const ctrlS = (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (!saveBtn.disabled) doSave(wasPublished ? 'udgivet' : 'kladde'); } };
+  document.addEventListener('keydown', ctrlS);
+  S.cleanup.push(() => document.removeEventListener('keydown', ctrlS));
+
+  const viewLink = wasPublished ? h('a', { class: 'btn btn--ghost', href: `/kurser/${courseId}/${slugify(src.data.slug || src.file.replace(/\.md$/, ''))}/`, target: '_blank', rel: 'noopener' }, icon('external', 16), 'Se på siden') : null;
+  paint(
+    h('a', { class: 'back', href: base }, `← ${course.navn}`),
+    pageHead(src ? 'Redigér lektion' : 'Ny lektion', src ? m.titel : `I kurset "${course.navn}". Felter med * skal udfyldes.`, viewLink),
+    h('div', { class: 'form' },
+      section('Lektionen', null,
+        field('Titel', titelIn, { required: true, wide: true }),
+        h('div', { class: 'grid3' },
+          field('Modul', modSel, { required: true }),
+          field('Rækkefølge i modulet', nrIn, { hint: 'Lektion nr. 1, 2, 3 … Du kan også flytte lektioner op og ned i kursusoversigten.' }),
+          h('div', { class: 'f' }, h('span', { class: 'flabel', text: 'Adgang' }), toggle('Gratis lektion', m.gratis, (v) => { m.gratis = v; markDirty(); }, 'Kan læses af alle. Ellers vises kun indledningen og første afsnit.')))),
+      section('Tekst', 'Brug H2-overskrifter. Låste lektioner viser alt frem til anden overskrift – skriv derfor en god indledning og et første afsnit, der kan stå alene. Slut gerne med "Det vigtigste" i punktform.', editor.el)),
+    h('div', { class: 'savebar' }, delBtn, h('span', { class: 'savebar__sp' }), h('a', { class: 'btn btn--ghost', href: base }, 'Annullér'), draftBtn, saveBtn));
+}
+
+/* =====================================================================
    Portefølje
    ===================================================================== */
 /** Dato, hvor en position kommer med på siden (forsinkelse efter seneste køb eller salg) – eller null, hvis den allerede vises. */
@@ -1522,8 +1809,8 @@ async function viewSettings(tab) {
         h('div', { class: 'f' }, h('span', { class: 'flabel', text: 'Hovedmarked' }),
           segmented([['us', 'USA'], ['dk', 'Danmark']], d.forside_marked === 'dk' ? 'dk' : 'us', (v) => { d.forside_marked = v; markDirty(); }),
           h('p', { class: 'f__hint', text: 'Bestemmer, hvilke aktier markedskompasset og heatmappet på forsiden viser, og hvilket marked der står først på markedssiden.' }))),
-      section('Premium-analyser', 'Indtil der er medlemslogin på siden, kan du vælge, hvordan premium-analyser vises.',
-        segmented([['teaser', 'Vis intro og første afsnit (resten låst)'], ['fuld', 'Vis hele analysen for alle']], d.premium_visning || 'teaser', (v) => { d.premium_visning = v; markDirty(); })));
+      section('Premium-indhold', 'Indtil der er medlemslogin på siden, kan du vælge, hvordan premium-analyser og kursernes låste lektioner vises.',
+        segmented([['teaser', 'Vis intro og første afsnit (resten låst)'], ['fuld', 'Vis alt for alle']], d.premium_visning || 'teaser', (v) => { d.premium_visning = v; markDirty(); })));
   }
 
   if (tab === 'medlemskab') {
@@ -1573,7 +1860,7 @@ async function viewSettings(tab) {
     for (const [key, title, sub] of lists) {
       d[key] = Array.isArray(d[key]) ? d[key] : [];
       const count = h('span', { class: 'muted' });
-      const setCount = () => { count.textContent = `${d[key].length} ${d[key].length === 1 ? 'kurs' : 'kurser'} · ${sub}`; };
+      const setCount = () => { count.textContent = `${d[key].length} ${d[key].length === 1 ? 'symbol' : 'symboler'} · ${sub}`; };
       setCount();
       body.append(h('details', { class: 'fsec fsec--fold', open: key === 'ticker' },
         h('summary', null, h('h2', { text: title }), count),
@@ -1601,7 +1888,7 @@ async function viewSettings(tab) {
   });
 
   paint(
-    pageHead('Indstillinger', 'Tekster, priser og hvilke kurser siden viser.'),
+    pageHead('Indstillinger', 'Tekster, priser og hvilke aktier og indeks siden viser.'),
     h('nav', { class: 'tabs', 'aria-label': 'Indstillinger' }, SETTINGS_TABS.map(([k, l]) => h('a', { href: `#/indstillinger/${k}`, 'aria-current': k === tab ? 'page' : null, text: l }))),
     body,
     h('div', { class: 'savebar' }, h('span', { class: 'savebar__sp' }), saveBtn));

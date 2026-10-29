@@ -271,4 +271,88 @@ function delayPortfolio(positions, days, now = new Date()) {
   return { visible, pending };
 }
 
-module.exports = { loadSettings, loadAnalyses, loadPortfolio, delayPortfolio, warnings, warn, ROOT, DATA };
+/* ---------- Kurser ----------
+ * _data/kurser/kurser.json beskriver kurserne og deres moduler. Hver lektion er en markdown-fil i
+ * _data/kurser/<kursus-id>/ med frontmatter: titel, modul (modulets id), nr (rækkefølge), gratis (true/false), status.
+ */
+const TIER_IDS = ['intro', 'plus', 'premium'];
+// Læsetid for undervisningstekst: ca. 170 ord i minuttet (langsommere end en nyhedsartikel), rundet op.
+function lessonMinutes(text) {
+  const words = String(text || '').replace(/[#>*_`\-\[\]()!|]/g, ' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(2, Math.ceil(words / 170));
+}
+
+function loadCourses() {
+  const dir = path.join(DATA, 'kurser');
+  const def = readJson(path.join(dir, 'kurser.json'), { kurser: [] });
+  const list = Array.isArray(def.kurser) ? def.kurser : [];
+  const seen = new Set();
+  const out = [];
+  for (const c of list) {
+    const id = slugify(c.id || c.navn || '');
+    if (!id || seen.has(id)) { if (id) warn(`Kurset "${id}" findes to gange i kurser.json – det andet springes over`); continue; }
+    seen.add(id);
+    const modules = (Array.isArray(c.moduler) ? c.moduler : []).map((m, i) => ({
+      id: slugify(m.id || m.titel || '') || `modul-${i + 1}`,
+      nr: i + 1,
+      titel: String(m.titel || `Modul ${i + 1}`).trim(),
+      beskrivelse: String(m.beskrivelse || '').trim(),
+      lessons: [],
+    }));
+    const byId = new Map(modules.map((m) => [m.id, m]));
+    const ldir = path.join(dir, id);
+    if (fs.existsSync(ldir)) {
+      for (const name of fs.readdirSync(ldir).filter((n) => n.endsWith('.md')).sort()) {
+        try {
+          const { data, content } = matter(fs.readFileSync(path.join(ldir, name), 'utf8'));
+          if (String(data.status || 'udgivet').toLowerCase() === 'kladde') continue;
+          const mod = byId.get(String(data.modul || ''));
+          if (!mod) { warn(`Lektionen "${name}" i "${c.navn || id}" hører til et modul, der ikke findes ("${data.modul || ''}")`); continue; }
+          const { html, headings } = renderMarkdown(content);
+          mod.lessons.push({
+            file: name,
+            slug: slugify(data.slug || name.replace(/\.md$/, '')),
+            titel: String(data.titel || name.replace(/\.md$/, '')).trim(),
+            nr: Number.isFinite(Number(data.nr)) ? Number(data.nr) : 999,
+            gratis: data.gratis === true,
+            minutes: lessonMinutes(content),
+            html,
+            headings,
+            teaserHtml: renderMarkdown(teaserMarkdown(content)).html,
+          });
+        } catch (err) {
+          warn(`Sprang lektionen "${name}" i "${c.navn || id}" over: ${err.message}`);
+        }
+      }
+    }
+    const lessons = [];
+    const slugs = new Set();
+    for (const m of modules) {
+      m.lessons.sort((a, b) => a.nr - b.nr || a.titel.localeCompare(b.titel, 'da'));
+      m.lessons.forEach((l, i) => {
+        if (slugs.has(l.slug)) { let n = 2; while (slugs.has(`${l.slug}-${n}`)) n++; warn(`To lektioner i "${c.navn || id}" har adressen "${l.slug}" – "${l.file}" får "${l.slug}-${n}"`); l.slug = `${l.slug}-${n}`; }
+        slugs.add(l.slug);
+        l.module = m; l.index = i + 1; l.pos = lessons.length;
+        lessons.push(l);
+      });
+    }
+    lessons.forEach((l, i) => { l.prev = lessons[i - 1] || null; l.next = lessons[i + 1] || null; });
+    const adgang = (Array.isArray(c.adgang) ? c.adgang : []).filter((t) => TIER_IDS.includes(t));
+    out.push({
+      id,
+      navn: String(c.navn || id).trim(),
+      kort: String(c.kort || c.navn || id).trim(),
+      niveau: String(c.niveau || '').trim(),
+      beskrivelse: String(c.beskrivelse || '').trim(),
+      forHvem: (Array.isArray(c.for_hvem) ? c.for_hvem : []).map((x) => String(x).trim()).filter(Boolean),
+      adgang: adgang.length ? adgang : ['premium'],
+      ratesYear: Number.isInteger(Number(c.satser_aar)) && Number(c.satser_aar) > 2000 ? Number(c.satser_aar) : null,
+      modules,
+      lessons,
+      minutes: lessons.reduce((s, l) => s + l.minutes, 0),
+    });
+  }
+  return out;
+}
+
+module.exports = { loadSettings, loadAnalyses, loadPortfolio, delayPortfolio, loadCourses, warnings, warn, ROOT, DATA };

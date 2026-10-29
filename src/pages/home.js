@@ -3,12 +3,13 @@ const { layout } = require('../templates/layout');
 const { icon } = require('../templates/icons');
 const C = require('../templates/components');
 const S = require('../templates/sections');
+const K = require('./kurser');
 
 const HOME_FAQ = [
   { q: 'Er det her finansiel rådgivning?', a: '<p>Nej. Alt indhold er undervisning og udtryk for egne holdninger. Der gives ingen personlige anbefalinger, og du træffer altid selv dine beslutninger. Læs mere under <a href="/vigtigt/">Vigtigt at vide</a>.</p>' },
   { q: 'Hvem skriver analyserne?', a: '<p>Analyserne skrives af en privat investor – ikke af en AI. AI-assistenten bruges kun til at forklare begreber, og den giver aldrig køb- eller salgsanbefalinger.</p>' },
   { q: 'Kan jeg opsige mit medlemskab?', a: '<p>Ja. Plus og Premium har ingen binding, og du kan opsige fra måned til måned.</p>' },
-  { q: 'Hvor kommer kurserne fra?', a: '<p>Kurserne hentes fra Yahoo Finance via sitets egen server og opdateres løbende. De kan være forsinkede op til 15 minutter og er kun til information.</p>' },
+  { q: 'Hvor kommer aktiekurserne fra?', a: '<p>Aktiekurserne hentes fra Yahoo Finance via sitets egen server og opdateres løbende. De kan være forsinkede op til 15 minutter og er kun til information.</p>' },
 ];
 
 function featureAnalysis(a, edu) {
@@ -47,6 +48,26 @@ function latestRow(a, edu) {
     <span class="lrow__foot"><span>${fmtDate(a.dato, { short: true })}</span>${a.niveauer.kurs != null && a.symbol && !edu ? html`<span>Siden analysen <span class="delta" data-f="since" data-base="${a.niveauer.kurs}">&nbsp;</span></span>` : ''}</span>
   </a>
 </li>`;
+}
+
+function coursesSection(site) {
+  const courses = site.courses || [];
+  if (!courses.length) return '';
+  return html`<section class="band band--paper" aria-labelledby="courses-title">
+  <div class="wrap">
+    <div class="sechead">
+      <div>
+        <h2 id="courses-title">Lær at investere – trin for trin</h2>
+        <p>Skrevne kurser, du kan læse i dit eget tempo – fra din første aktie til regnskaber, skat og krypto. Første modul i hvert kursus er gratis.</p>
+      </div>
+      <a class="textlink" href="/kurser/">Alle kurser ${icon('arrowRight', { size: 16 })}</a>
+    </div>
+    <div class="ccards">${courses.map((c) => K.courseCard(site, c, { headingLevel: 3 }))}</div>
+  </div>
+</section>
+<section class="band band--white" aria-labelledby="syl-home-title">
+  <div class="wrap">${K.syllabus(site, courses, { id: 'syl-home' })}</div>
+</section>`;
 }
 
 function portfolioTeaser(site) {
@@ -158,6 +179,8 @@ module.exports = function homePage(site) {
   </div>
 </section>
 
+${coursesSection(site)}
+
 <section class="band band--paper" aria-labelledby="latest-title">
   <div class="wrap">
     <div class="sechead">
@@ -178,6 +201,19 @@ module.exports = function homePage(site) {
 </section>
 
 ${portfolioTeaser(site)}
+
+<section class="band band--paper" aria-labelledby="calc-title">
+  <div class="wrap">
+    <div class="sechead">
+      <div>
+        <h2 id="calc-title">Hvad kan din opsparing vokse til?</h2>
+        <p>Prøv med dit eget startbeløb, din månedlige opsparing og forskellige afkast – og se, hvor meget omkostningerne betyder over tid.</p>
+      </div>
+      <a class="textlink" href="/beregner/">Åbn beregneren ${icon('arrowRight', { size: 16 })}</a>
+    </div>
+    ${S.calculator(site, { id: 'calc-home' })}
+  </div>
+</section>
 
 <section class="band band--blue" aria-labelledby="ai-title">
   <div class="wrap aiteaser">
@@ -215,7 +251,7 @@ ${portfolioTeaser(site)}
     <div class="sechead sechead--center">
       <div>
         <h2 id="price-title">Vælg dit medlemskab</h2>
-        <p>Start med introduktionen, eller få adgang til alle analyser med Plus og Premium. Ingen binding.</p>
+        <p>Kurserne og analyserne indgår i medlemskaberne. Start med introduktionen, eller vælg Plus eller Premium – uden binding.</p>
       </div>
     </div>
     ${S.pricing(site)}
@@ -242,5 +278,5 @@ ${portfolioTeaser(site)}
     all: mk.key === 'us' ? [...toData(s.us_aktier), ...toData(s.danske_aktier)] : [...toData(s.danske_aktier), ...toData(s.us_aktier)],
   };
 
-  return [{ path: '/', html: layout(site, { path: '/', active: 'home', body, scripts: ['home'], data: pageData, bodyClass: 'page-home' }) }];
+  return [{ path: '/', html: layout(site, { path: '/', active: 'home', body, scripts: ['home', 'courses', 'calc'], data: pageData, bodyClass: 'page-home' }) }];
 };
